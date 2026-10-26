@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { TOOL_REGISTRY } from '../registry.ts';
 import { useRouter } from './router.ts';
 import { ToastProvider } from '../components/Toast.tsx';
@@ -24,7 +24,7 @@ export const App: React.FC = () => {
   const { currentPath, navigate } = useRouter();
   const [sharedInput, setSharedInput] = useState<string>(INITIAL_INPUT);
 
-  const activeTool = TOOL_REGISTRY.find((t) => t.path === currentPath) || TOOL_REGISTRY[0];
+  const activeTool = TOOL_REGISTRY.find((t) => t.route === currentPath) || TOOL_REGISTRY[0];
   const ToolComponent = activeTool.component;
 
   return (
@@ -68,14 +68,14 @@ export const App: React.FC = () => {
             <nav className="px-2 space-y-1">
               {TOOL_REGISTRY.map((tool) => {
                 const Icon = tool.icon;
-                const isActive = tool.path === currentPath;
+                const isActive = tool.route === currentPath;
                 return (
                   <a
                     key={tool.id}
-                    href={tool.path}
+                    href={tool.route}
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(tool.path);
+                      navigate(tool.route);
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm text-xs font-medium transition-colors text-left group ${
                       isActive
@@ -128,10 +128,18 @@ export const App: React.FC = () => {
 
           {/* Active Tool View */}
           <div className="flex-1 min-h-0 relative">
-            <ToolComponent
-              sharedInput={sharedInput}
-              onSharedInputChange={setSharedInput}
-            />
+            <Suspense
+              fallback={
+                <div className="flex h-full w-full items-center justify-center text-mute text-xs">
+                  Loading tool...
+                </div>
+              }
+            >
+              <ToolComponent
+                sharedInput={sharedInput}
+                onSharedInputChange={setSharedInput}
+              />
+            </Suspense>
           </div>
         </main>
       </div>

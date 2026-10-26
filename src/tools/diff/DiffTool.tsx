@@ -412,7 +412,7 @@ export const DiffTool: React.FC = () => {
               className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
               title="Load sample data"
             >
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <Sparkles className="w-3 h-3 text-primary" />
             </button>
           </div>
         </div>

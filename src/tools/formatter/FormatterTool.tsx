@@ -8,7 +8,6 @@ import { parseLooseJSON } from '../../core/parse/parser.ts';
 import { ASTNode, ParseError } from '../../core/parse/types.ts';
 import { formatAST, IndentOption, calculateSizeMetrics } from '../../core/format/formatter.ts';
 import { repairAndParseJSON, RepairItem } from '../../core/repair/repair.ts';
-import { PathFormat } from '../../core/path/format.ts';
 import {
   Copy,
   Trash2,
@@ -58,15 +57,6 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
   // Formatter options
   const [indent, setIndent] = useState<IndentOption>('2');
   const [sortKeys, setSortKeys] = useState(false);
-
-  // Path format for tree view
-  const [pathFormat, setPathFormat] = useState<PathFormat>(() => {
-    return (sessionStorage.getItem('toolbox_path_format') as PathFormat) || 'js';
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem('toolbox_path_format', pathFormat);
-  }, [pathFormat]);
 
   const [ast, setAst] = useState<ASTNode | null>(null);
   const [formattedOutput, setFormattedOutput] = useState<string>('');
@@ -380,8 +370,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
             ) : ast ? (
               <TreeView
                 ast={ast}
-                pathFormat={pathFormat}
-                onPathFormatChange={setPathFormat}
+                mode="inspector"
               />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-mute p-6 text-center">

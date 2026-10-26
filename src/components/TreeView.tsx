@@ -1,26 +1,41 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ASTNode, ObjectNode, ArrayNode, PropertyNode } from '../core/parse/types.ts';
+import { ASTNode } from '../core/parse/types.ts';
 import { PathFormat, PathSegment, formatPath } from '../core/path/format.ts';
 import { searchAST, SearchScope, SearchMatch } from '../core/search/search.ts';
 import { TreeSearchBar } from './TreeSearchBar.tsx';
 import { useToast } from './Toast.tsx';
 import { ChevronRight, ChevronDown, Copy, Check, Search, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
 
-interface TreeViewProps {
+export interface TreeViewProps {
   ast: ASTNode;
-  pathFormat: PathFormat;
-  onPathFormatChange: (fmt: PathFormat) => void;
+  mode?: 'inspector' | 'pathfinder';
+  pathFormat?: PathFormat;
+  onPathFormatChange?: (fmt: PathFormat) => void;
   onSelectPath?: (path: PathSegment[], formatted: string) => void;
 }
 
 export const TreeView: React.FC<TreeViewProps> = ({
   ast,
-  pathFormat,
+  mode = 'inspector',
+  pathFormat: controlledPathFormat,
   onPathFormatChange,
   onSelectPath,
 }) => {
   const { showToast } = useToast();
   const treeContainerRef = useRef<HTMLDivElement>(null);
+
+  // Path format state (supports controlled or internal state)
+  const [internalPathFormat, setInternalPathFormat] = useState<PathFormat>(() => {
+    return (sessionStorage.getItem('toolbox_path_format') as PathFormat) || 'js';
+  });
+
+  const pathFormat = controlledPathFormat ?? internalPathFormat;
+
+  const handleFormatChange = useCallback((fmt: PathFormat) => {
+    sessionStorage.setItem('toolbox_path_format', fmt);
+    setInternalPathFormat(fmt);
+    onPathFormatChange?.(fmt);
+  }, [onPathFormatChange]);
 
   // Expanded paths set
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
@@ -43,11 +58,11 @@ export const TreeView: React.FC<TreeViewProps> = ({
     return initial;
   });
 
-  // Current selected path (for path bar and manual copy)
+  // Current selected path (for pathfinder mode)
   const [activePath, setActivePath] = useState<PathSegment[]>([]);
   const [copiedRecently, setCopiedRecently] = useState(false);
 
-  // Search State
+  // Search State (only used in pathfinder mode)
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchScope, setSearchScope] = useState<SearchScope>('both');
@@ -58,15 +73,16 @@ export const TreeView: React.FC<TreeViewProps> = ({
   // Debounced search query
   const [debouncedQuery, setDebouncedQuery] = useState('');
   useEffect(() => {
+    if (mode !== 'pathfinder') return;
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
     }, 150);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, mode]);
 
-  // Execute AST Search
+  // Execute AST Search (pathfinder mode only)
   const searchResult = useMemo(() => {
-    if (!debouncedQuery) {
+    if (mode !== 'pathfinder' || !debouncedQuery) {
       return { matches: [], totalFound: 0, isCapped: false };
     }
     return searchAST(ast, {
@@ -76,10 +92,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
       useRegex: searchUseRegex,
       maxMatches: 1000,
     });
-  }, [ast, debouncedQuery, searchScope, searchMatchCase, searchUseRegex]);
+  }, [ast, debouncedQuery, searchScope, searchMatchCase, searchUseRegex, mode]);
 
-  // Handle Ctrl+F / Cmd+F on tree container
+  // Handle Ctrl+F / Cmd+F on tree container in pathfinder mode
   useEffect(() => {
+    if (mode !== 'pathfinder') return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
         const target = e.target as HTMLElement;
@@ -92,7 +110,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown, true);
     return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, []);
+  }, [mode]);
 
   // Jump to active search match
   const jumpToMatch = useCallback(
@@ -128,12 +146,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
   );
 
   useEffect(() => {
-    if (searchResult.matches.length > 0) {
+    if (mode === 'pathfinder' && searchResult.matches.length > 0) {
       jumpToMatch(0);
     } else {
       setSearchCurrentIndex(0);
     }
-  }, [searchResult.matches]);
+  }, [searchResult.matches, mode, jumpToMatch]);
 
   // Expand / Collapse Helpers
   const handleExpandAll = () => {
@@ -171,25 +189,29 @@ export const TreeView: React.FC<TreeViewProps> = ({
     });
   };
 
-  // Select path on click (DOES NOT auto-copy to clipboard)
-  const handleItemSelect = (path: PathSegment[], e?: React.MouseEvent) => {
+  // Node Click in Pathfinder Mode: copies path right away with confirmation
+  const handlePathfinderItemClick = (path: PathSegment[], e?: React.MouseEvent) => {
     e?.stopPropagation();
     setActivePath(path);
-    if (onSelectPath) {
-      const formatted = formatPath(path, pathFormat);
-      onSelectPath(path, formatted);
-    }
+    const formatted = formatPath(path, pathFormat);
+    const textToCopy = formatted || '<root>';
+
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedRecently(true);
+    setTimeout(() => setCopiedRecently(false), 2000);
+    showToast('Copied path', { code: textToCopy });
+
+    onSelectPath?.(path, formatted);
   };
 
   const currentFormattedPath = formatPath(activePath, pathFormat);
 
-  // Prominent Copy Action
   const handleManualCopyPath = () => {
     const textToCopy = currentFormattedPath || '<root>';
-    navigator.clipboard.writeText(currentFormattedPath);
+    navigator.clipboard.writeText(textToCopy);
     setCopiedRecently(true);
     setTimeout(() => setCopiedRecently(false), 2000);
-    showToast('Copied path to clipboard', { code: textToCopy });
+    showToast('Copied path', { code: textToCopy });
   };
 
   return (
@@ -198,118 +220,145 @@ export const TreeView: React.FC<TreeViewProps> = ({
       tabIndex={0}
       className="flex flex-col h-full w-full bg-canvas select-text outline-none focus:ring-1 focus:ring-primary/30"
     >
-      {/* 1. TOP PROMINENT PATH BAR WITH LARGE COPY BUTTON */}
-      <div className="border-b border-hairline bg-canvas-soft p-3 flex flex-col gap-2 shrink-0">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-mute shrink-0">
-              Selected Path:
-            </span>
-            <div
+      {/* ── TOOLBAR / PATH BAR ── */}
+      {mode === 'pathfinder' ? (
+        <div className="border-b border-hairline bg-canvas-soft p-3 flex flex-col gap-2 shrink-0">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-mute shrink-0">
+                Selected Path:
+              </span>
+              <div
+                onClick={handleManualCopyPath}
+                className="font-mono text-sm text-primary font-medium truncate bg-canvas px-3 py-1.5 rounded-sm border border-hairline flex-1 cursor-pointer hover:border-primary/50 transition-colors"
+                title="Click to copy"
+              >
+                {currentFormattedPath || '<root>'}
+              </div>
+            </div>
+
+            {/* Accessible Copy Button */}
+            <button
               onClick={handleManualCopyPath}
-              className="font-mono text-sm text-primary font-medium truncate bg-canvas px-3 py-1.5 rounded-sm border border-hairline flex-1 cursor-pointer hover:border-primary/50 transition-colors"
-              title="Click to copy"
+              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-semibold text-xs transition-all shadow-sm shrink-0 active:scale-95 ${
+                copiedRecently
+                  ? 'bg-primary-soft text-canvas'
+                  : 'bg-primary hover:bg-primary-soft text-canvas'
+              }`}
+              title="Copy selected path to clipboard"
             >
-              {currentFormattedPath || '<root>'}
-            </div>
+              {copiedRecently ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[2.5]" />
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 stroke-[2.5]" />
+                  <span>Copy Path</span>
+                </>
+              )}
+            </button>
           </div>
 
-          {/* Large, Accessible Copy Button */}
-          <button
-            onClick={handleManualCopyPath}
-            className={`flex items-center gap-2 px-4 py-2 rounded-sm font-semibold text-xs transition-all shadow-sm shrink-0 active:scale-95 ${
-              copiedRecently
-                ? 'bg-primary-soft text-canvas'
-                : 'bg-primary hover:bg-primary-soft text-canvas'
-            }`}
-            title="Copy selected path to clipboard"
-          >
-            {copiedRecently ? (
-              <>
-                <Check className="w-4 h-4 stroke-[2.5]" />
-                <span>Copied!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 stroke-[2.5]" />
-                <span>Copy Path</span>
-              </>
-            )}
-          </button>
+          {/* Format Selector & Tree Actions Row */}
+          <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-hairline/40">
+            <div className="flex items-center gap-2">
+              <span className="text-mute text-[11px]">Format:</span>
+              <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
+                <button
+                  onClick={() => handleFormatChange('js')}
+                  className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
+                    pathFormat === 'js'
+                      ? 'bg-primary text-canvas font-semibold'
+                      : 'text-mute hover:text-ink'
+                  }`}
+                >
+                  JS
+                </button>
+                <button
+                  onClick={() => handleFormatChange('jsonpath')}
+                  className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
+                    pathFormat === 'jsonpath'
+                      ? 'bg-primary text-canvas font-semibold'
+                      : 'text-mute hover:text-ink'
+                  }`}
+                >
+                  JSONPath
+                </button>
+                <button
+                  onClick={() => handleFormatChange('gjson')}
+                  className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
+                    pathFormat === 'gjson'
+                      ? 'bg-primary text-canvas font-semibold'
+                      : 'text-mute hover:text-ink'
+                  }`}
+                >
+                  Gjson
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleExpandAll}
+                className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
+                title="Expand all"
+              >
+                <ChevronsUpDown className="w-3.5 h-3.5 text-primary" />
+              </button>
+              <button
+                onClick={handleCollapseAll}
+                className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
+                title="Collapse all"
+              >
+                <ChevronsDownUp className="w-3.5 h-3.5 text-mute" />
+              </button>
+
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-sm border transition-colors ${
+                  isSearchOpen
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-hairline text-mute hover:text-ink bg-canvas'
+                }`}
+                title="Search AST (Ctrl+F / Cmd+F)"
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Find</span>
+              </button>
+            </div>
+          </div>
         </div>
-
-        {/* Format Selector & Tree Actions Row */}
-        <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-hairline/40">
-          <div className="flex items-center gap-2">
-            <span className="text-mute text-[11px]">Format:</span>
-            <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
-              <button
-                onClick={() => onPathFormatChange('js')}
-                className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
-                  pathFormat === 'js'
-                    ? 'bg-primary text-canvas font-semibold'
-                    : 'text-mute hover:text-ink'
-                }`}
-              >
-                JS
-              </button>
-              <button
-                onClick={() => onPathFormatChange('jsonpath')}
-                className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
-                  pathFormat === 'jsonpath'
-                    ? 'bg-primary text-canvas font-semibold'
-                    : 'text-mute hover:text-ink'
-                }`}
-              >
-                JSONPath
-              </button>
-              <button
-                onClick={() => onPathFormatChange('gjson')}
-                className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
-                  pathFormat === 'gjson'
-                    ? 'bg-primary text-canvas font-semibold'
-                    : 'text-mute hover:text-ink'
-                }`}
-              >
-                Gjson
-              </button>
-            </div>
-          </div>
-
+      ) : (
+        /* Inspector Mode Header: Only Expand / Collapse controls */
+        <div className="h-9 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between text-xs shrink-0">
+          <span className="text-[11px] font-semibold text-mute uppercase tracking-wider">
+            Tree View
+          </span>
           <div className="flex items-center gap-1">
             <button
               onClick={handleExpandAll}
-              className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
-              title="Expand all"
+              className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
+              title="Expand all nodes"
             >
-              <ChevronsUpDown className="w-3.5 h-3.5 text-primary" />
+              <ChevronsUpDown className="w-3 h-3 text-primary" />
+              <span>Expand all</span>
             </button>
             <button
               onClick={handleCollapseAll}
-              className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
-              title="Collapse all"
+              className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
+              title="Collapse all nodes"
             >
-              <ChevronsDownUp className="w-3.5 h-3.5 text-mute" />
-            </button>
-
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-sm border transition-colors ${
-                isSearchOpen
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-hairline text-mute hover:text-ink bg-canvas'
-              }`}
-              title="Search AST (Ctrl+F / Cmd+F)"
-            >
-              <Search className="w-3.5 h-3.5" />
-              <span>Find</span>
+              <ChevronsDownUp className="w-3 h-3 text-mute" />
+              <span>Collapse all</span>
             </button>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* 2. Search Bar Drawer (if opened) */}
-      {isSearchOpen && (
+      {/* ── Search Bar Drawer (Pathfinder mode only) ── */}
+      {mode === 'pathfinder' && isSearchOpen && (
         <TreeSearchBar
           query={searchQuery}
           onQueryChange={setSearchQuery}
@@ -330,17 +379,18 @@ export const TreeView: React.FC<TreeViewProps> = ({
         />
       )}
 
-      {/* 3. Main Tree Canvas */}
+      {/* ── Main Tree Nodes ── */}
       <div className="flex-1 overflow-auto p-4 font-mono text-xs leading-relaxed">
         <TreeNode
           node={ast}
           path={[]}
           expandedPaths={expandedPaths}
           onToggleExpand={toggleExpand}
-          onItemSelect={handleItemSelect}
-          activePathKey={JSON.stringify(activePath)}
+          onPathfinderItemClick={mode === 'pathfinder' ? handlePathfinderItemClick : undefined}
+          activePathKey={mode === 'pathfinder' ? JSON.stringify(activePath) : ''}
           searchMatches={searchResult.matches}
           searchCurrentIndex={searchCurrentIndex}
+          mode={mode}
         />
       </div>
     </div>
@@ -353,10 +403,11 @@ interface TreeNodeProps {
   propKey?: string;
   expandedPaths: Set<string>;
   onToggleExpand: (pathKey: string) => void;
-  onItemSelect: (path: PathSegment[], e?: React.MouseEvent) => void;
+  onPathfinderItemClick?: (path: PathSegment[], e?: React.MouseEvent) => void;
   activePathKey: string;
   searchMatches: SearchMatch[];
   searchCurrentIndex: number;
+  mode: 'inspector' | 'pathfinder';
 }
 
 const TreeNode: React.FC<TreeNodeProps> = ({
@@ -365,14 +416,15 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   propKey,
   expandedPaths,
   onToggleExpand,
-  onItemSelect,
+  onPathfinderItemClick,
   activePathKey,
   searchMatches,
   searchCurrentIndex,
+  mode,
 }) => {
   const pathKey = JSON.stringify(path);
   const isExpanded = expandedPaths.has(pathKey);
-  const isNodeActive = activePathKey === pathKey;
+  const isNodeActive = Boolean(activePathKey && activePathKey === pathKey);
 
   const isSearchCurrentMatch =
     searchMatches.length > 0 &&
@@ -393,8 +445,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               : 'hover:bg-canvas-soft'
           }`}
           onClick={(e) => {
+            if (mode === 'pathfinder' && onPathfinderItemClick) {
+              onPathfinderItemClick(path, e);
+            }
             onToggleExpand(pathKey);
-            onItemSelect(path, e);
           }}
         >
           <button
@@ -413,7 +467,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
 
           {propKey !== undefined && (
             <span
-              onClick={(e) => onItemSelect(path, e)}
+              onClick={(e) => {
+                if (mode === 'pathfinder' && onPathfinderItemClick) {
+                  onPathfinderItemClick(path, e);
+                }
+              }}
               className="text-primary font-semibold"
             >
               "{propKey}":
@@ -435,10 +493,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 propKey={prop.key}
                 expandedPaths={expandedPaths}
                 onToggleExpand={onToggleExpand}
-                onItemSelect={onItemSelect}
+                onPathfinderItemClick={onPathfinderItemClick}
                 activePathKey={activePathKey}
                 searchMatches={searchMatches}
                 searchCurrentIndex={searchCurrentIndex}
+                mode={mode}
               />
             ))}
           </div>
@@ -460,8 +519,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               : 'hover:bg-canvas-soft'
           }`}
           onClick={(e) => {
+            if (mode === 'pathfinder' && onPathfinderItemClick) {
+              onPathfinderItemClick(path, e);
+            }
             onToggleExpand(pathKey);
-            onItemSelect(path, e);
           }}
         >
           <button
@@ -480,7 +541,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
 
           {propKey !== undefined && (
             <span
-              onClick={(e) => onItemSelect(path, e)}
+              onClick={(e) => {
+                if (mode === 'pathfinder' && onPathfinderItemClick) {
+                  onPathfinderItemClick(path, e);
+                }
+              }}
               className="text-primary font-semibold"
             >
               {typeof propKey === 'number' ? `[${propKey}]` : `"${propKey}":`}
@@ -502,10 +567,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 propKey={idx.toString()}
                 expandedPaths={expandedPaths}
                 onToggleExpand={onToggleExpand}
-                onItemSelect={onItemSelect}
+                onPathfinderItemClick={onPathfinderItemClick}
                 activePathKey={activePathKey}
                 searchMatches={searchMatches}
                 searchCurrentIndex={searchCurrentIndex}
+                mode={mode}
               />
             ))}
           </div>
@@ -517,8 +583,14 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   return (
     <div
       id={domId}
-      onClick={(e) => onItemSelect(path, e)}
-      className={`flex items-center gap-2 py-0.5 px-1.5 rounded cursor-pointer transition-colors group ${
+      onClick={(e) => {
+        if (mode === 'pathfinder' && onPathfinderItemClick) {
+          onPathfinderItemClick(path, e);
+        }
+      }}
+      className={`flex items-center gap-2 py-0.5 px-1.5 rounded transition-colors group ${
+        mode === 'pathfinder' ? 'cursor-pointer' : ''
+      } ${
         isSearchCurrentMatch
           ? 'bg-primary/20 border-l-2 border-primary'
           : isNodeActive

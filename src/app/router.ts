@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 export function normalizePath(pathname: string): string {
   const clean = pathname.replace(/\/+$/, '') || '/';
-  if (clean === '/' || clean === '') {
-    return '/formatter';
+  if (clean === '' || clean === '/') {
+    return '/';
   }
   return clean;
 }
@@ -14,7 +14,6 @@ export function useRouter() {
   });
 
   useEffect(() => {
-    // If user opened root '/', update url to '/formatter'
     const clean = normalizePath(window.location.pathname);
     if (window.location.pathname !== clean) {
       window.history.replaceState(null, '', clean);
