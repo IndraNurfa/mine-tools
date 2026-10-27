@@ -20,7 +20,7 @@ export const TOOL_REGISTRY: ToolItem[] = [
     group: 'JSON',
     route: '/formatter',
     component: React.lazy(() =>
-      import('./tools/formatter/FormatterTool.tsx').then((m) => ({ default: m.FormatterTool }))
+      import('./tools/formatter/FormatterTool.tsx').then((m) => ({ default: m.FormatterTool })),
     ),
   },
   {
@@ -31,7 +31,7 @@ export const TOOL_REGISTRY: ToolItem[] = [
     group: 'JSON',
     route: '/path-finder',
     component: React.lazy(() =>
-      import('./tools/path-finder/PathFinderTool.tsx').then((m) => ({ default: m.PathFinderTool }))
+      import('./tools/path-finder/PathFinderTool.tsx').then((m) => ({ default: m.PathFinderTool })),
     ),
   },
   {
@@ -42,7 +42,7 @@ export const TOOL_REGISTRY: ToolItem[] = [
     group: 'Diff',
     route: '/diff',
     component: React.lazy(() =>
-      import('./tools/diff/DiffTool.tsx').then((m) => ({ default: m.DiffTool }))
+      import('./tools/diff/DiffTool.tsx').then((m) => ({ default: m.DiffTool })),
     ),
   },
 ];
