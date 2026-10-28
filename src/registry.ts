@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileCode, GitCompare, Route } from 'lucide-react';
+import { FileCode, GitCompare, Route, List, Type, Fingerprint } from 'lucide-react';
 
 export interface ToolItem {
   id: string;
@@ -45,4 +45,52 @@ export const TOOL_REGISTRY: ToolItem[] = [
       import('./tools/diff/DiffTool.tsx').then((m) => ({ default: m.DiffTool })),
     ),
   },
+  {
+    id: 'list-formatter',
+    name: 'List Formatter',
+    description: 'Join lines into plain or quoted lists — TEXTJOIN without the spreadsheet',
+    icon: List,
+    group: 'Text',
+    route: '/list-formatter',
+    component: React.lazy(() =>
+      import('./tools/list-formatter/ListFormatterTool.tsx').then((m) => ({
+        default: m.ListFormatterTool,
+      })),
+    ),
+  },
+  {
+    id: 'char-count',
+    name: 'Char Count',
+    description: 'Live character, word, line and UTF-8 byte counts',
+    icon: Type,
+    group: 'Text',
+    route: '/char-count',
+    component: React.lazy(() =>
+      import('./tools/char-count/CharCountTool.tsx').then((m) => ({ default: m.CharCountTool })),
+    ),
+  },
+  {
+    id: 'uuid',
+    name: 'UUID Generator',
+    description: 'Bulk UUID v4 and v7 with uppercase and no-hyphen options',
+    icon: Fingerprint,
+    group: 'Generate',
+    route: '/uuid',
+    component: React.lazy(() =>
+      import('./tools/uuid/UuidTool.tsx').then((m) => ({ default: m.UuidTool })),
+    ),
+  },
 ];
+
+/** Group tools by `group`, preserving first-seen order from TOOL_REGISTRY. */
+export function groupTools(
+  tools: ToolItem[] = TOOL_REGISTRY,
+): { group: string; tools: ToolItem[] }[] {
+  const map = new Map<string, ToolItem[]>();
+  for (const tool of tools) {
+    const list = map.get(tool.group) || [];
+    list.push(tool);
+    map.set(tool.group, list);
+  }
+  return Array.from(map.entries()).map(([group, tools]) => ({ group, tools }));
+}

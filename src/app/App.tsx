@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useCallback } from 'react';
-import { TOOL_REGISTRY } from '../registry.ts';
+import { TOOL_REGISTRY, groupTools } from '../registry.ts';
 import { useRouter } from './router.ts';
 import { ToastProvider } from '../components/Toast.tsx';
 import { CommandPalette } from '../components/CommandPalette.tsx';
@@ -61,8 +61,8 @@ export const App: React.FC = () => {
       ) : (
         <div className="flex h-screen w-screen bg-canvas text-ink overflow-hidden font-sans select-none">
           {/* Left Sidebar */}
-          <aside className="w-64 border-r border-hairline bg-canvas flex flex-col justify-between shrink-0">
-            <div>
+          <aside className="w-64 border-r border-hairline bg-canvas flex flex-col shrink-0 min-h-0">
+            <div className="flex-1 min-h-0 flex flex-col">
               {/* Brand Header → home */}
               <div className="h-14 px-4 border-b border-hairline flex items-center bg-canvas">
                 <a
@@ -87,46 +87,50 @@ export const App: React.FC = () => {
                 </a>
               </div>
 
-              {/* Section Eyebrow */}
-              <div className="px-4 pt-4 pb-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[2.52px] text-mute">
-                  MODULES
-                </span>
-              </div>
-
-              {/* Tool Navigation from registry */}
-              <nav className="px-2 space-y-1">
-                {TOOL_REGISTRY.map((tool) => {
-                  const Icon = tool.icon;
-                  const isActive = tool.route === currentPath;
-                  return (
-                    <a
-                      key={tool.id}
-                      href={tool.route}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate(tool.route);
-                      }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm text-xs font-medium transition-colors text-left group ${
-                        isActive
-                          ? 'bg-canvas-soft border border-hairline text-primary shadow-inset-glow'
-                          : 'text-body hover:text-ink hover:bg-canvas-soft border border-transparent'
-                      }`}
-                    >
-                      <Icon
-                        className={`w-4 h-4 ${
-                          isActive ? 'text-primary' : 'text-mute group-hover:text-ink'
-                        }`}
-                      />
-                      <div className="truncate flex-1">
-                        <div className="truncate">{tool.name}</div>
-                      </div>
-                      {isActive && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                      )}
-                    </a>
-                  );
-                })}
+              {/* Tool Navigation — grouped by registry category */}
+              <nav className="px-2 pt-3 pb-2 space-y-4 flex-1 min-h-0 overflow-y-auto">
+                {groupTools().map(({ group, tools }) => (
+                  <div key={group}>
+                    <div className="px-3 pb-1.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-[2.52px] text-mute">
+                        {group}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      {tools.map((tool) => {
+                        const Icon = tool.icon;
+                        const isActive = tool.route === currentPath;
+                        return (
+                          <a
+                            key={tool.id}
+                            href={tool.route}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(tool.route);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm text-xs font-medium transition-colors text-left group ${
+                              isActive
+                                ? 'bg-canvas-soft border border-hairline text-primary shadow-inset-glow'
+                                : 'text-body hover:text-ink hover:bg-canvas-soft border border-transparent'
+                            }`}
+                          >
+                            <Icon
+                              className={`w-4 h-4 ${
+                                isActive ? 'text-primary' : 'text-mute group-hover:text-ink'
+                              }`}
+                            />
+                            <div className="truncate flex-1">
+                              <div className="truncate">{tool.name}</div>
+                            </div>
+                            {isActive && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                            )}
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </nav>
             </div>
 

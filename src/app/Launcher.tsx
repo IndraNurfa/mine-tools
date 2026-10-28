@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { TOOL_REGISTRY, ToolItem } from '../registry.ts';
+import { TOOL_REGISTRY, groupTools } from '../registry.ts';
 import { Zap, Search, Command } from 'lucide-react';
 
 interface LauncherProps {
@@ -48,16 +48,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
     );
   }, [query]);
 
-  // Group filtered tools by category (preserve registry order)
-  const grouped = useMemo(() => {
-    const map = new Map<string, ToolItem[]>();
-    for (const tool of filteredTools) {
-      const list = map.get(tool.group) || [];
-      list.push(tool);
-      map.set(tool.group, list);
-    }
-    return map;
-  }, [filteredTools]);
+  const grouped = useMemo(() => groupTools(filteredTools), [filteredTools]);
 
   // Reset selected index when filter changes
   useEffect(() => {
@@ -160,7 +151,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
               <p className="text-sm">No tools match &ldquo;{query}&rdquo;</p>
             </div>
           ) : (
-            Array.from(grouped.entries()).map(([group, tools]) => (
+            grouped.map(({ group, tools }) => (
               <div key={group} className="mb-8 last:mb-0">
                 <div className="px-1 mb-3">
                   <span className="text-[10px] font-semibold uppercase tracking-[2.52px] text-mute">
