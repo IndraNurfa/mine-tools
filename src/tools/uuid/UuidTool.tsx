@@ -1,166 +1,105 @@
 import React, { useCallback, useState } from 'react';
-import { useToast } from '../../components/Toast.tsx';
-import { UuidVersion, generateUuids } from '../../core/uuid/generate.ts';
 import { Copy, RefreshCw, Fingerprint } from 'lucide-react';
+import { UuidVersion, generateUuids } from '../../core/uuid/generate.ts';
+import { Check, Label, PaneHeader, Segmented, TextBtn, inputCls, useCopy } from '../../components/ui.tsx';
+import { usePersistentState } from '../../lib/storage.ts';
 
 export const UuidTool: React.FC = () => {
-  const { showToast } = useToast();
-  const [version, setVersion] = useState<UuidVersion>('v4');
-  const [count, setCount] = useState(10);
-  const [uppercase, setUppercase] = useState(false);
-  const [noHyphen, setNoHyphen] = useState(false);
-  const [ids, setIds] = useState<string[]>(() =>
-    generateUuids('v4', 10, { uppercase: false, noHyphen: false }),
+  const copy = useCopy();
+  const [version, setVersion] = usePersistentState<UuidVersion>('uuid', 'version', 'v4');
+  const [uppercase, setUppercase] = usePersistentState('uuid', 'uppercase', false);
+  const [noHyphen, setNoHyphen] = usePersistentState('uuid', 'noHyphen', false);
+  const [count, setCount] = usePersistentState('uuid', 'count', 10);
+
+  const gen = useCallback(
+    (n: number) => generateUuids(version, n, { uppercase, noHyphen }),
+    [version, uppercase, noHyphen],
   );
+  const [single, setSingle] = useState(() => gen(1)[0]!);
+  const [bulk, setBulk] = useState<string[]>(() => gen(Math.max(1, Math.min(10_000, count))));
 
-  const regenerate = useCallback(
-    (overrides?: {
-      version?: UuidVersion;
-      count?: number;
-      uppercase?: boolean;
-      noHyphen?: boolean;
-    }) => {
-      const v = overrides?.version ?? version;
-      const n = overrides?.count ?? count;
-      const up = overrides?.uppercase ?? uppercase;
-      const nh = overrides?.noHyphen ?? noHyphen;
-      setIds(generateUuids(v, n, { uppercase: up, noHyphen: nh }));
-    },
-    [version, count, uppercase, noHyphen],
-  );
+  // Single UUID: regenerate on every option change; copy on click.
+  const regenSingle = useCallback(() => setSingle(gen(1)[0]!), [gen]);
+  React.useEffect(regenSingle, [regenSingle]);
 
-  const onVersion = (v: UuidVersion) => {
-    setVersion(v);
-    regenerate({ version: v });
-  };
+  // Keep the bulk list in sync with version/format options so it is never an empty box.
+  React.useEffect(() => {
+    setBulk(gen(Math.max(1, Math.min(10_000, count))));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gen]);
 
-  const onCountChange = (raw: string) => {
-    const n = Math.max(1, Math.min(10_000, parseInt(raw, 10) || 1));
-    setCount(n);
-    regenerate({ count: n });
-  };
-
-  const onUppercase = (v: boolean) => {
-    setUppercase(v);
-    regenerate({ uppercase: v });
-  };
-
-  const onNoHyphen = (v: boolean) => {
-    setNoHyphen(v);
-    regenerate({ noHyphen: v });
-  };
-
-  const output = ids.join('\n');
-
-  const copyAll = async () => {
-    try {
-      await navigator.clipboard.writeText(output);
-      showToast(ids.length === 1 ? 'UUID copied' : `${ids.length} UUIDs copied`);
-    } catch {
-      showToast('Clipboard access denied', { type: 'error' });
-    }
-  };
+  const bulkText = bulk.join('\n');
+  const generateBulk = () => setBulk(gen(Math.max(1, Math.min(10_000, count))));
 
   return (
-    <div className="h-full flex flex-col min-h-0 bg-canvas">
-      {/* Controls */}
-      <div className="shrink-0 border-b border-hairline px-4 py-3 space-y-3">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[10px] font-semibold">
-              Version
-            </span>
-            <div className="flex rounded-sm border border-hairline overflow-hidden">
-              {(['v4', 'v7'] as UuidVersion[]).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => onVersion(v)}
-                  className={`px-3 py-1.5 font-mono transition-colors ${
-                    version === v
-                      ? 'bg-primary/15 text-primary'
-                      : 'bg-canvas-soft text-mute hover:text-ink'
-                  }`}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-            <span className="text-[11px] text-mute hidden sm:inline">
-              {version === 'v4' ? 'random' : 'time-ordered'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[10px] font-semibold">
-              Count
-            </span>
-            <input
-              type="number"
-              min={1}
-              max={10000}
-              value={count}
-              onChange={(e) => onCountChange(e.target.value)}
-              className="w-20 bg-canvas-soft border border-hairline rounded-sm px-2 py-1.5 text-ink text-xs font-mono focus:outline-none focus:border-primary tabular-nums"
-            />
-          </div>
-
-          <label className="flex items-center gap-2 cursor-pointer text-body hover:text-ink">
-            <input
-              type="checkbox"
-              checked={uppercase}
-              onChange={(e) => onUppercase(e.target.checked)}
-              className="accent-primary"
-            />
-            Uppercase
-          </label>
-          <label className="flex items-center gap-2 cursor-pointer text-body hover:text-ink">
-            <input
-              type="checkbox"
-              checked={noHyphen}
-              onChange={(e) => onNoHyphen(e.target.checked)}
-              className="accent-primary"
-            />
-            No hyphens
-          </label>
-
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => regenerate()}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-hairline bg-canvas-soft text-xs text-mute hover:text-ink hover:border-primary/40 transition-colors"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Regenerate
-            </button>
-            <button
-              type="button"
-              onClick={copyAll}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-primary/40 bg-primary/10 text-xs text-primary hover:bg-primary/20 transition-colors"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              Copy all
-            </button>
-          </div>
+    <div className="h-full flex flex-col min-h-0 bg-canvas overflow-auto">
+      {/* Options shared by both sections */}
+      <div className="shrink-0 border-b border-hairline px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex items-center gap-2">
+          <Label>Version</Label>
+          <Segmented
+            mono
+            value={version}
+            options={[
+              { id: 'v4', label: 'v4' },
+              { id: 'v7', label: 'v7' },
+            ]}
+            onChange={setVersion}
+          />
+          <span className="text-[11px] text-mute hidden sm:inline">
+            {version === 'v4' ? 'random' : 'time-ordered'}
+          </span>
         </div>
+        <Check checked={uppercase} onChange={setUppercase}>Uppercase</Check>
+        <Check checked={noHyphen} onChange={setNoHyphen}>No hyphens</Check>
       </div>
 
-      {/* Output */}
-      <div className="flex-1 min-h-0 flex flex-col">
-        <div className="h-10 px-3 flex items-center justify-between border-b border-hairline shrink-0">
-          <span className="text-[10px] font-semibold uppercase tracking-[2px] text-mute flex items-center gap-1.5">
-            <Fingerprint className="w-3 h-3" />
-            Output
-          </span>
-          <span className="font-mono text-[11px] text-mute">
-            <span className="text-primary font-semibold">{ids.length}</span> UUID
-            {ids.length === 1 ? '' : 's'}
-          </span>
+      {/* One UUID, ready to copy */}
+      <section className="px-4 py-8 border-b border-hairline flex flex-col items-center gap-4">
+        <Label>Your UUID {version}</Label>
+        <button
+          type="button"
+          onClick={() => copy(single, 'UUID copied')}
+          title="Click to copy"
+          className="max-w-full px-5 py-4 rounded-md border border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors font-mono text-xl sm:text-3xl text-ink-strong tracking-tight break-all"
+        >
+          {single}
+        </button>
+        <div className="flex gap-2">
+          <TextBtn primary onClick={() => copy(single, 'UUID copied')}>
+            <Copy className="w-3.5 h-3.5" /> Copy
+          </TextBtn>
+          <TextBtn onClick={regenSingle}>
+            <RefreshCw className="w-3.5 h-3.5" /> New UUID
+          </TextBtn>
         </div>
+      </section>
+
+      {/* Bulk */}
+      <section className="flex-1 min-h-[240px] flex flex-col">
+        <div className="px-4 py-3 flex flex-wrap items-center gap-3 border-b border-hairline">
+          <Label>Bulk generate</Label>
+          <input
+            type="number"
+            min={1}
+            max={10000}
+            value={count}
+            onChange={(e) => setCount(Math.max(1, Math.min(10_000, parseInt(e.target.value, 10) || 1)))}
+            className={`${inputCls} w-24 tabular-nums`}
+          />
+          <TextBtn primary onClick={generateBulk}>
+            <Fingerprint className="w-3.5 h-3.5" /> Generate {count} UUIDs
+          </TextBtn>
+        </div>
+        <PaneHeader
+          title={`Output · ${bulk.length} UUID${bulk.length === 1 ? '' : 's'}`}
+          copyText={bulkText}
+          onClear={() => setBulk([])}
+        />
         <pre className="flex-1 overflow-auto p-4 text-sm font-mono text-ink leading-relaxed whitespace-pre">
-          {output}
+          {bulkText || <span className="text-mute">Press Generate.</span>}
         </pre>
-      </div>
+      </section>
     </div>
   );
 };

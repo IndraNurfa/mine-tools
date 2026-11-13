@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node -e \"const fs=require('fs');const p=require('path');const src='node_modules/monaco-editor/min/vs';const dest='public/monaco/vs';if(!fs.existsSync(src))process.exit(0);fs.mkdirSync(p.dirname(dest),{recursive:true});fs.cpSync(src,dest,{recursive:true});console.log('monaco assets → public/monaco/vs');\""
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "lucide-react": "^1.16.0",
+    "monaco-editor": "^0.57.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

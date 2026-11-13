@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { usePersistentState } from '../../lib/storage.ts';
 import { Editor } from '../../components/Editor.tsx';
 import { TreeView } from '../../components/TreeView.tsx';
+import { applyTokenEdit } from '../../core/tree/editAst.ts';
 import { ErrorBanner } from '../../components/ErrorBanner.tsx';
 import { RepairModal } from '../../components/RepairModal.tsx';
 import { useToast } from '../../components/Toast.tsx';
@@ -52,15 +54,19 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
   const { showToast } = useToast();
 
   // Preview Switch: Text | Tree
-  const [outputView, setOutputView] = useState<'text' | 'tree'>('text');
+  const [outputView, setOutputView] = usePersistentState<'text' | 'tree'>('formatter', 'outputView', 'text');
 
   // Formatter options
-  const [indent, setIndent] = useState<IndentOption>('2');
-  const [sortKeys, setSortKeys] = useState(false);
+  const [indent, setIndent] = usePersistentState<IndentOption>('formatter', 'indent', '2');
+  const [sortKeys, setSortKeys] = usePersistentState('formatter', 'sortKeys', false);
 
   const [ast, setAst] = useState<ASTNode | null>(null);
   const [formattedOutput, setFormattedOutput] = useState<string>('');
-  const [parseError, setParseError] = useState<{ message: string; line: number; column: number } | null>(null);
+  const [parseError, setParseError] = useState<{
+    message: string;
+    line: number;
+    column: number;
+  } | null>(null);
 
   // Repair Modal state
   const [isRepairModalOpen, setIsRepairModalOpen] = useState(false);
@@ -184,7 +190,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
                 <FileCode className="w-3.5 h-3.5 text-primary" />
                 Input
               </span>
-              <span className="text-[10px] text-mute font-mono bg-canvas px-1.5 py-0.5 rounded-xs border border-hairline">
+              <span className="text-[11px] text-mute font-mono bg-canvas px-1.5 py-0.5 rounded-xs border border-hairline">
                 {sizeMetrics.inputFormatted}
               </span>
             </div>
@@ -360,7 +366,11 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
                     <span className="text-primary">Out: {sizeMetrics.outputFormatted}</span>
                     {sizeMetrics.inputBytes > 0 && (
                       <span className="text-mute">
-                        ({sizeMetrics.reductionPercentage >= 0 ? `-${sizeMetrics.reductionPercentage}%` : `+${Math.abs(sizeMetrics.reductionPercentage)}%`})
+                        (
+                        {sizeMetrics.reductionPercentage >= 0
+                          ? `-${sizeMetrics.reductionPercentage}%`
+                          : `+${Math.abs(sizeMetrics.reductionPercentage)}%`}
+                        )
                       </span>
                     )}
                   </div>
@@ -371,6 +381,10 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
               <TreeView
                 ast={ast}
                 mode="inspector"
+                onEditToken={({ path, kind, newText }) => {
+                  const next = applyTokenEdit(ast, path, kind, newText);
+                  onSharedInputChange(formatAST(next));
+                }}
               />
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-mute p-6 text-center">

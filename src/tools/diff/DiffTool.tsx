@@ -1,10 +1,18 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { usePersistentState } from '../../lib/storage.ts';
 import Editor, { OnMount } from '@monaco-editor/react';
 import { useToast } from '../../components/Toast.tsx';
 import { parseLooseJSON } from '../../core/parse/parser.ts';
+import { ASTNode } from '../../core/parse/types.ts';
 import { formatAST } from '../../core/format/formatter.ts';
-import { computeSemanticDiff, summarizeDiff, DiffChangeType } from '../../core/diff/semanticDiff.ts';
-import { PathFormat, formatPath } from '../../core/path/format.ts';
+import {
+  computeSemanticDiff,
+  summarizeDiff,
+  DiffChangeType,
+} from '../../core/diff/semanticDiff.ts';
+import { PathFormat, formatPath, PathSegment } from '../../core/path/format.ts';
+import { TreeView } from '../../components/TreeView.tsx';
+import { applyTokenEdit } from '../../core/tree/editAst.ts';
 import {
   ArrowRightLeft,
   Copy,
@@ -19,6 +27,7 @@ import {
   ChevronsDownUp,
   WrapText,
   AlignJustify,
+  FolderTree,
 } from 'lucide-react';
 
 const SAMPLE_LEFT = `{
@@ -133,9 +142,11 @@ const EditorPane: React.FC<EditorPaneProps> = ({
       {/* Pane header */}
       <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">{label}</span>
+          <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+            {label}
+          </span>
           {error && (
-            <span className="text-[10px] text-amber-400 font-mono bg-amber-950/30 border border-amber-600/30 px-1.5 py-0.5 rounded-xs">
+            <span className="text-[11px] text-amber-400 font-mono bg-amber-950/30 border border-amber-600/30 px-1.5 py-0.5 rounded-xs">
               Parse error
             </span>
           )}
@@ -211,11 +222,11 @@ export const DiffTool: React.FC = () => {
   const leftEditorRef = useRef<any>(null);
   const rightEditorRef = useRef<any>(null);
 
-  const [leftInput, setLeftInput] = useState<string>(SAMPLE_LEFT);
-  const [rightInput, setRightInput] = useState<string>(SAMPLE_RIGHT);
+  const [leftInput, setLeftInput] = usePersistentState<string>('diff', 'leftInput', SAMPLE_LEFT);
+  const [rightInput, setRightInput] = usePersistentState<string>('diff', 'rightInput', SAMPLE_RIGHT);
 
   // Diff mode: 'semantic' table or monaco-style inline highlights on both panes
-  const [diffMode, setDiffMode] = useState<'inline' | 'semantic'>('inline');
+  const [diffMode, setDiffMode] = usePersistentState<'inline' | 'semantic' | 'tree'>('diff', 'diffMode', 'inline');
 
   // Highlight decorations from diff
   const [leftDecorations, setLeftDecorations] = useState<string[]>([]);
@@ -225,7 +236,7 @@ export const DiffTool: React.FC = () => {
     return (sessionStorage.getItem('toolbox_path_format') as PathFormat) || 'js';
   });
 
-  const [changeTypeFilter, setChangeTypeFilter] = useState<'all' | DiffChangeType>('all');
+  const [changeTypeFilter, setChangeTypeFilter] = usePersistentState<'all' | DiffChangeType>('diff', 'changeTypeFilter', 'all');
 
   // Compute ASTs
   const { leftAST, leftError } = useMemo(() => {
@@ -259,6 +270,19 @@ export const DiffTool: React.FC = () => {
     return diffRows.filter((r) => r.type === changeTypeFilter);
   }, [diffRows, changeTypeFilter]);
 
+  // Paths to highlight in tree preview (all changed/added/removed)
+  const highlightPaths = useMemo(() => {
+    const set = new Set<string>();
+    for (const row of diffRows) {
+      set.add(JSON.stringify(row.path));
+      // also highlight ancestors so they stay visible when collapsed partially
+      for (let i = 1; i < row.path.length; i++) {
+        set.add(JSON.stringify(row.path.slice(0, i)));
+      }
+    }
+    return set;
+  }, [diffRows]);
+
   // Apply inline diff highlights to left & right editors
   useEffect(() => {
     if (diffMode !== 'inline') return;
@@ -287,7 +311,8 @@ export const DiffTool: React.FC = () => {
             options: {
               isWholeLine: true,
               className: row.type === 'removed' ? 'diff-removed-line' : 'diff-changed-line',
-              linesDecorationsClassName: row.type === 'removed' ? 'diff-removed-gutter' : 'diff-changed-gutter',
+              linesDecorationsClassName:
+                row.type === 'removed' ? 'diff-removed-gutter' : 'diff-changed-gutter',
             },
           });
         }
@@ -301,7 +326,8 @@ export const DiffTool: React.FC = () => {
             options: {
               isWholeLine: true,
               className: row.type === 'added' ? 'diff-added-line' : 'diff-changed-line',
-              linesDecorationsClassName: row.type === 'added' ? 'diff-added-gutter' : 'diff-changed-gutter',
+              linesDecorationsClassName:
+                row.type === 'added' ? 'diff-added-gutter' : 'diff-changed-gutter',
             },
           });
         }
@@ -385,9 +411,20 @@ export const DiffTool: React.FC = () => {
             >
               <WrapText className="w-3.5 h-3.5" />
               <span>Semantic</span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-canvas border border-hairline text-mute ml-1">
+              <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-full bg-canvas border border-hairline text-mute ml-1">
                 {diffSummary.total}
               </span>
+            </button>
+            <button
+              onClick={() => setDiffMode('tree')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-xs transition-colors ${
+                diffMode === 'tree'
+                  ? 'bg-primary text-canvas font-semibold'
+                  : 'text-mute hover:text-ink'
+              }`}
+            >
+              <FolderTree className="w-3.5 h-3.5" />
+              <span>Tree</span>
             </button>
           </div>
 
@@ -434,7 +471,7 @@ export const DiffTool: React.FC = () => {
             Format Right
           </button>
 
-          {diffMode === 'semantic' && (
+          {(diffMode === 'semantic' || diffMode === 'tree') && (
             <>
               <div className="w-px h-4 bg-hairline" />
               <div className="flex items-center gap-1.5">
@@ -459,140 +496,228 @@ export const DiffTool: React.FC = () => {
 
       {/* ── Body ── */}
       <div className="flex-1 flex min-h-0 divide-x divide-hairline overflow-hidden">
-        {/* Left Editor */}
-        <div className="flex flex-col min-w-0 overflow-hidden" style={{ width: diffMode === 'semantic' ? '35%' : '50%' }}>
-          <EditorPane
-            label="Original (Left)"
-            value={leftInput}
-            onChange={setLeftInput}
-            editorRef={leftEditorRef}
-            onMount={handleLeftEditorMount}
-            error={leftError}
-          />
-        </div>
-
-        {/* Right Editor */}
-        <div className="flex flex-col min-w-0 overflow-hidden" style={{ width: diffMode === 'semantic' ? '35%' : '50%' }}>
-          <EditorPane
-            label="Modified (Right)"
-            value={rightInput}
-            onChange={setRightInput}
-            editorRef={rightEditorRef}
-            onMount={handleRightEditorMount}
-            error={rightError}
-          />
-        </div>
-
-        {/* Semantic Diff Panel — shown as 3rd column */}
-        {diffMode === 'semantic' && (
-          <div className="flex flex-col min-w-0 overflow-hidden border-l border-hairline" style={{ width: '30%' }}>
-            {/* Panel header */}
-            <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
-              <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
-                Changes
-              </span>
-              {/* Filter pills */}
-              <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
-                {(['all', 'added', 'removed', 'changed'] as const).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setChangeTypeFilter(f)}
-                    className={`px-2 py-0.5 rounded-xs text-[10px] font-mono transition-colors capitalize ${
-                      changeTypeFilter === f
-                        ? 'bg-primary text-canvas font-semibold'
-                        : 'text-mute hover:text-ink'
-                    }`}
-                  >
-                    {f === 'all' ? `All (${diffSummary.total})` : f}
-                  </button>
-                ))}
+        {diffMode === 'tree' ? (
+          <>
+            {/* Left tree */}
+            <div className="flex flex-col min-w-0 w-1/2 overflow-hidden">
+              <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between text-xs shrink-0">
+                <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+                  Original (Left)
+                </span>
+                <span className="text-[11px] text-mute font-mono">
+                  click = select · double-click = edit
+                </span>
+              </div>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {leftError ? (
+                  <div className="p-4 text-xs text-red-400 font-mono">{leftError}</div>
+                ) : leftAST ? (
+                  <TreeView
+                    ast={leftAST}
+                    mode="inspector"
+                    clickAction="none"
+                    highlightPaths={highlightPaths}
+                    pathFormat={pathFormat}
+                    onPathFormatChange={(fmt) => {
+                      setPathFormat(fmt);
+                      sessionStorage.setItem('toolbox_path_format', fmt);
+                    }}
+                    onEditToken={({ path, kind, newText }) => {
+                      const next = applyTokenEdit(leftAST, path, kind, newText);
+                      setLeftInput(formatAST(next));
+                    }}
+                  />
+                ) : (
+                  <div className="p-4 text-xs text-mute">
+                    Paste JSON on the left (switch to Inline to edit)
+                  </div>
+                )}
               </div>
             </div>
+            {/* Right tree */}
+            <div className="flex flex-col min-w-0 w-1/2 overflow-hidden">
+              <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between text-xs shrink-0">
+                <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+                  Modified (Right)
+                </span>
+                <span className="text-[11px] text-mute font-mono">
+                  changed paths highlighted · click to select
+                </span>
+              </div>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                {rightError ? (
+                  <div className="p-4 text-xs text-red-400 font-mono">{rightError}</div>
+                ) : rightAST ? (
+                  <TreeView
+                    ast={rightAST}
+                    mode="inspector"
+                    clickAction="none"
+                    highlightPaths={highlightPaths}
+                    pathFormat={pathFormat}
+                    onPathFormatChange={(fmt) => {
+                      setPathFormat(fmt);
+                      sessionStorage.setItem('toolbox_path_format', fmt);
+                    }}
+                    onEditToken={({ path, kind, newText }) => {
+                      const next = applyTokenEdit(rightAST, path, kind, newText);
+                      setRightInput(formatAST(next));
+                    }}
+                  />
+                ) : (
+                  <div className="p-4 text-xs text-mute">
+                    Paste JSON on the right (switch to Inline to edit)
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Left Editor */}
+            <div
+              className="flex flex-col min-w-0 overflow-hidden"
+              style={{ width: diffMode === 'semantic' ? '35%' : '50%' }}
+            >
+              <EditorPane
+                label="Original (Left)"
+                value={leftInput}
+                onChange={setLeftInput}
+                editorRef={leftEditorRef}
+                onMount={handleLeftEditorMount}
+                error={leftError}
+              />
+            </div>
 
-            {/* Diff rows */}
-            <div className="flex-1 overflow-y-auto">
-              {filteredRows.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-6 text-mute">
-                  <Check className="w-10 h-10 text-primary mb-2 stroke-[1.5]" />
-                  <p className="text-sm font-semibold text-ink">
-                    {!leftInput.trim() && !rightInput.trim()
-                      ? 'Enter JSON on both sides'
-                      : 'Identical'}
-                  </p>
-                  <p className="text-xs text-mute mt-1">No semantic differences found</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-hairline/30">
-                  {filteredRows.map((row, idx) => {
-                    const formatted = formatPath(row.path, pathFormat);
-                    return (
-                      <div
-                        key={idx}
-                        className="px-3 py-2.5 hover:bg-canvas-soft transition-colors group"
+            {/* Right Editor */}
+            <div
+              className="flex flex-col min-w-0 overflow-hidden"
+              style={{ width: diffMode === 'semantic' ? '35%' : '50%' }}
+            >
+              <EditorPane
+                label="Modified (Right)"
+                value={rightInput}
+                onChange={setRightInput}
+                editorRef={rightEditorRef}
+                onMount={handleRightEditorMount}
+                error={rightError}
+              />
+            </div>
+
+            {/* Semantic Diff Panel — shown as 3rd column */}
+            {diffMode === 'semantic' && (
+              <div
+                className="flex flex-col min-w-0 overflow-hidden border-l border-hairline"
+                style={{ width: '30%' }}
+              >
+                {/* Panel header */}
+                <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
+                  <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+                    Changes
+                  </span>
+                  {/* Filter pills */}
+                  <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
+                    {(['all', 'added', 'removed', 'changed'] as const).map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => setChangeTypeFilter(f)}
+                        className={`px-2 py-0.5 rounded-xs text-[11px] font-mono transition-colors capitalize ${
+                          changeTypeFilter === f
+                            ? 'bg-primary text-canvas font-semibold'
+                            : 'text-mute hover:text-ink'
+                        }`}
                       >
-                        {/* Type badge + path */}
-                        <div className="flex items-center gap-2 mb-1">
-                          {row.type === 'added' && (
-                            <span className="inline-flex items-center gap-0.5 text-primary text-[10px] font-semibold">
-                              <PlusCircle className="w-3 h-3" /> Added
-                            </span>
-                          )}
-                          {row.type === 'removed' && (
-                            <span className="inline-flex items-center gap-0.5 text-red-400 text-[10px] font-semibold">
-                              <MinusCircle className="w-3 h-3" /> Removed
-                            </span>
-                          )}
-                          {row.type === 'changed' && (
-                            <span className="inline-flex items-center gap-0.5 text-amber-400 text-[10px] font-semibold">
-                              <AlertCircle className="w-3 h-3" /> Changed
-                            </span>
-                          )}
-                        </div>
+                        {f === 'all' ? `All (${diffSummary.total})` : f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                        <button
-                          onClick={() => handleCopyPath(row.path)}
-                          className="w-full text-left font-mono text-[11px] text-ink hover:text-primary transition-colors flex items-center gap-1 group/path"
-                          title="Click to copy path"
-                        >
-                          <span className="truncate">{formatted || '<root>'}</span>
-                          <Copy className="w-2.5 h-2.5 opacity-0 group-hover/path:opacity-60 shrink-0 transition-opacity" />
-                        </button>
+                {/* Diff rows */}
+                <div className="flex-1 overflow-y-auto">
+                  {filteredRows.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-6 text-mute">
+                      <Check className="w-10 h-10 text-primary mb-2 stroke-[1.5]" />
+                      <p className="text-sm font-semibold text-ink">
+                        {!leftInput.trim() && !rightInput.trim()
+                          ? 'Enter JSON on both sides'
+                          : 'Identical'}
+                      </p>
+                      <p className="text-xs text-mute mt-1">No semantic differences found</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-hairline/30">
+                      {filteredRows.map((row, idx) => {
+                        const formatted = formatPath(row.path, pathFormat);
+                        return (
+                          <div
+                            key={idx}
+                            className="px-3 py-2.5 hover:bg-canvas-soft transition-colors group"
+                          >
+                            {/* Type badge + path */}
+                            <div className="flex items-center gap-2 mb-1">
+                              {row.type === 'added' && (
+                                <span className="inline-flex items-center gap-0.5 text-primary text-[11px] font-semibold">
+                                  <PlusCircle className="w-3 h-3" /> Added
+                                </span>
+                              )}
+                              {row.type === 'removed' && (
+                                <span className="inline-flex items-center gap-0.5 text-red-400 text-[11px] font-semibold">
+                                  <MinusCircle className="w-3 h-3" /> Removed
+                                </span>
+                              )}
+                              {row.type === 'changed' && (
+                                <span className="inline-flex items-center gap-0.5 text-amber-400 text-[11px] font-semibold">
+                                  <AlertCircle className="w-3 h-3" /> Changed
+                                </span>
+                              )}
+                            </div>
 
-                        {/* Values */}
-                        {(row.oldValue !== undefined || row.newValue !== undefined) && (
-                          <div className="mt-1.5 space-y-0.5 font-mono text-[11px]">
-                            {row.oldValue !== undefined && (
-                              <div className="flex items-start gap-1.5">
-                                <span className="text-red-400/60 shrink-0">−</span>
-                                <span className="text-red-300/80 truncate line-through opacity-70">
-                                  {row.oldValue}
-                                </span>
-                              </div>
-                            )}
-                            {row.newValue !== undefined && (
-                              <div className="flex items-start gap-1.5">
-                                <span className="text-primary shrink-0">+</span>
-                                <span className="text-primary font-medium truncate">
-                                  {row.newValue}
-                                </span>
+                            <button
+                              onClick={() => handleCopyPath(row.path)}
+                              className="w-full text-left font-mono text-[11px] text-ink hover:text-primary transition-colors flex items-center gap-1 group/path"
+                              title="Click to copy path"
+                            >
+                              <span className="truncate">{formatted || '<root>'}</span>
+                              <Copy className="w-2.5 h-2.5 opacity-0 group-hover/path:opacity-60 shrink-0 transition-opacity" />
+                            </button>
+
+                            {/* Values */}
+                            {(row.oldValue !== undefined || row.newValue !== undefined) && (
+                              <div className="mt-1.5 space-y-0.5 font-mono text-[11px]">
+                                {row.oldValue !== undefined && (
+                                  <div className="flex items-start gap-1.5">
+                                    <span className="text-red-400/60 shrink-0">−</span>
+                                    <span className="text-red-300/80 truncate line-through opacity-70">
+                                      {row.oldValue}
+                                    </span>
+                                  </div>
+                                )}
+                                {row.newValue !== undefined && (
+                                  <div className="flex items-start gap-1.5">
+                                    <span className="text-primary shrink-0">+</span>
+                                    <span className="text-primary font-medium truncate">
+                                      {row.newValue}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Footer summary */}
-            <div className="h-8 border-t border-hairline bg-canvas-soft px-3 flex items-center gap-4 text-[11px] font-mono text-mute shrink-0">
-              <span className="text-primary">+{diffSummary.added}</span>
-              <span className="text-red-400">-{diffSummary.removed}</span>
-              <span className="text-amber-400">~{diffSummary.changed}</span>
-            </div>
-          </div>
+                {/* Footer summary */}
+                <div className="h-8 border-t border-hairline bg-canvas-soft px-3 flex items-center gap-4 text-[11px] font-mono text-mute shrink-0">
+                  <span className="text-primary">+{diffSummary.added}</span>
+                  <span className="text-red-400">-{diffSummary.removed}</span>
+                  <span className="text-amber-400">~{diffSummary.changed}</span>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -612,9 +737,6 @@ export const DiffTool: React.FC = () => {
 // ────────────────────────────────────────────────────────────
 // Helper: walk AST to find node at path
 // ────────────────────────────────────────────────────────────
-import { ASTNode } from '../../core/parse/types.ts';
-import { PathSegment } from '../../core/path/format.ts';
-
 function findNodeAtPath(root: ASTNode, path: PathSegment[]): ASTNode | null {
   let node: ASTNode = root;
   for (const seg of path) {

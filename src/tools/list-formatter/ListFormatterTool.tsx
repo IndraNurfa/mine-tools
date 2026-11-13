@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { usePersistentState } from '../../lib/storage.ts';
 import { useToast } from '../../components/Toast.tsx';
 import {
   ListFormatOptions,
@@ -40,15 +41,15 @@ const WRAPPERS: { id: WrapperStyle; label: string }[] = [
 
 export const ListFormatterTool: React.FC = () => {
   const { showToast } = useToast();
-  const [input, setInput] = useState(SAMPLE);
-  const [separatorId, setSeparatorId] = useState('comma-space');
-  const [customSep, setCustomSep] = useState('');
-  const [useCustomSep, setUseCustomSep] = useState(false);
-  const [quote, setQuote] = useState<QuoteStyle>('single');
-  const [wrapper, setWrapper] = useState<WrapperStyle>('none');
-  const [trim, setTrim] = useState(true);
-  const [skipEmpty, setSkipEmpty] = useState(true);
-  const [dedupe, setDedupe] = useState(false);
+  const [input, setInput] = usePersistentState('list-formatter', 'input', SAMPLE);
+  const [separatorId, setSeparatorId] = usePersistentState('list-formatter', 'separatorId', 'comma-space');
+  const [customSep, setCustomSep] = usePersistentState('list-formatter', 'customSep', '');
+  const [useCustomSep, setUseCustomSep] = usePersistentState('list-formatter', 'useCustomSep', false);
+  const [quote, setQuote] = usePersistentState<QuoteStyle>('list-formatter', 'quote', 'single');
+  const [wrapper, setWrapper] = usePersistentState<WrapperStyle>('list-formatter', 'wrapper', 'none');
+  const [trim, setTrim] = usePersistentState('list-formatter', 'trim', true);
+  const [skipEmpty, setSkipEmpty] = usePersistentState('list-formatter', 'skipEmpty', true);
+  const [dedupe, setDedupe] = usePersistentState('list-formatter', 'dedupe', false);
 
   const separator = useCustomSep
     ? customSep
@@ -88,7 +89,7 @@ export const ListFormatterTool: React.FC = () => {
       <div className="shrink-0 border-b border-hairline px-4 py-3 space-y-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[10px] font-semibold">
+            <span className="text-mute uppercase tracking-wider text-[11px] font-semibold">
               Separator
             </span>
             <select
@@ -122,7 +123,7 @@ export const ListFormatterTool: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[10px] font-semibold">
+            <span className="text-mute uppercase tracking-wider text-[11px] font-semibold">
               Quote
             </span>
             <div className="flex rounded-sm border border-hairline overflow-hidden">
@@ -144,7 +145,7 @@ export const ListFormatterTool: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[10px] font-semibold">
+            <span className="text-mute uppercase tracking-wider text-[11px] font-semibold">
               Wrapper
             </span>
             <div className="flex rounded-sm border border-hairline overflow-hidden">
@@ -206,7 +207,7 @@ export const ListFormatterTool: React.FC = () => {
         {/* Input */}
         <div className="flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-hairline">
           <div className="h-10 px-3 flex items-center justify-between border-b border-hairline shrink-0">
-            <span className="text-[10px] font-semibold uppercase tracking-[2px] text-mute flex items-center gap-1.5">
+            <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute flex items-center gap-1.5">
               <List className="w-3 h-3" />
               Lines in
             </span>
@@ -273,10 +274,10 @@ function OutputPane({
     <div className="flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-hairline last:border-r-0">
       <div className="h-10 px-3 flex items-center justify-between border-b border-hairline shrink-0">
         <div className="min-w-0">
-          <span className="text-[10px] font-semibold uppercase tracking-[2px] text-mute">
+          <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">
             {title}
           </span>
-          <span className="text-[10px] text-mute ml-2 font-mono">{subtitle}</span>
+          <span className="text-[11px] text-mute ml-2 font-mono">{subtitle}</span>
         </div>
         <button
           type="button"

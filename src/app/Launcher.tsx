@@ -111,7 +111,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
 
   return (
     <div className="flex h-full w-full flex-col items-center bg-canvas overflow-auto">
-      <div className="w-full max-w-2xl px-6 pt-16 pb-12">
+      <div className="w-full max-w-6xl px-8 pt-14 pb-12">
         {/* Brand */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-9 h-9 rounded-sm bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
@@ -124,7 +124,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
         </div>
 
         {/* Search — focused on load */}
-        <div className="relative mb-8">
+        <div className="relative mb-10 max-w-2xl">
           <div className="flex items-center gap-2.5 bg-canvas-soft border border-hairline rounded-sm px-4 py-3 focus-within:border-primary transition-colors">
             <Search className="w-4 h-4 text-mute shrink-0" />
             <input
@@ -138,7 +138,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
               autoComplete="off"
               spellCheck={false}
             />
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[10px] text-mute font-mono shrink-0">
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-mute font-mono shrink-0">
               /
             </kbd>
           </div>
@@ -154,11 +154,11 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
             grouped.map(({ group, tools }) => (
               <div key={group} className="mb-8 last:mb-0">
                 <div className="px-1 mb-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-[2.52px] text-mute">
+                  <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">
                     {group}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                   {tools.map((tool) => {
                     const Icon = tool.icon;
                     const thisIdx = flatIdx++;
@@ -206,19 +206,19 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
         {/* Footer hint */}
         <div className="flex items-center justify-center gap-4 mt-8 text-[11px] text-mute font-mono">
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[10px] text-ink">
+            <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
               ↑↓
             </kbd>
             navigate
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[10px] text-ink">
+            <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
               ↵
             </kbd>
             open
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[10px] text-ink flex items-center gap-0.5">
+            <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink flex items-center gap-0.5">
               <Command className="w-2.5 h-2.5" />K
             </kbd>
             jump
