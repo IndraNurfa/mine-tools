@@ -172,7 +172,7 @@ export const CopyRow: React.FC<{ label: string; value: string; dim?: boolean }> 
       onClick={() => copy(value, `${label} copied`)}
       className="w-full flex items-center gap-3 px-4 py-3 rounded-md border border-hairline bg-canvas-soft hover:border-primary/40 transition-colors text-left group"
     >
-      <span className="w-24 shrink-0 text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">
+      <span className="w-28 shrink-0 text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">
         {label}
       </span>
       <span
