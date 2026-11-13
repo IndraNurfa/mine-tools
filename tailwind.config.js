@@ -24,8 +24,8 @@ export default {
           DEFAULT: '#f2f2f2',
           strong: '#ffffff',
         },
-        body: '#bdbdbd',
-        mute: '#8b949e',
+        body: '#d0d0d0',
+        mute: '#9ca3af',
         'canvas-text-soft': '#f5f6f7',
       },
       fontFamily: {

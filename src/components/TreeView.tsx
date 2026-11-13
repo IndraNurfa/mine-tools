@@ -1,10 +1,34 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ASTNode } from '../core/parse/types.ts';
+import { formatAST } from '../core/format/formatter.ts';
+import { displayKeyToken, displayValueToken } from '../core/tree/editAst.ts';
 import { PathFormat, PathSegment, formatPath } from '../core/path/format.ts';
 import { searchAST, SearchScope, SearchMatch } from '../core/search/search.ts';
 import { TreeSearchBar } from './TreeSearchBar.tsx';
 import { useToast } from './Toast.tsx';
-import { ChevronRight, ChevronDown, Copy, Check, Search, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  Copy,
+  Check,
+  Search,
+  ChevronsUpDown,
+  ChevronsDownUp,
+} from 'lucide-react';
+
+/**
+ * Row-level click behavior (not key/value tokens).
+ * path = pathfinder copies path on row click; none = no auto action.
+ * Key/value tokens always: single-click = select all, double-click = edit.
+ */
+export type TreeClickAction = 'path' | 'none';
+
+export interface TreeEditPayload {
+  path: PathSegment[];
+  kind: 'key' | 'value';
+  /** Full displayed token text (strings include quotes) */
+  newText: string;
+}
 
 export interface TreeViewProps {
   ast: ASTNode;
@@ -12,6 +36,14 @@ export interface TreeViewProps {
   pathFormat?: PathFormat;
   onPathFormatChange?: (fmt: PathFormat) => void;
   onSelectPath?: (path: PathSegment[], formatted: string) => void;
+  /** path = copy path on row click (pathfinder default); none = no row auto-copy */
+  clickAction?: TreeClickAction;
+  /** JSON.stringify(path) keys to highlight (e.g. changed paths in diff tree) */
+  highlightPaths?: Set<string>;
+  /** Called when a key or value is committed after double-click edit */
+  onEditToken?: (payload: TreeEditPayload) => void;
+  /** Allow double-click edit (default true when onEditToken is provided) */
+  editable?: boolean;
 }
 
 export const TreeView: React.FC<TreeViewProps> = ({
@@ -20,7 +52,14 @@ export const TreeView: React.FC<TreeViewProps> = ({
   pathFormat: controlledPathFormat,
   onPathFormatChange,
   onSelectPath,
+  clickAction,
+  highlightPaths,
+  onEditToken,
+  editable,
 }) => {
+  // pathfinder defaults to path copy on row click; inspector defaults to none
+  const resolvedClick: TreeClickAction = clickAction ?? (mode === 'pathfinder' ? 'path' : 'none');
+  const canEdit = editable ?? Boolean(onEditToken);
   const { showToast } = useToast();
   const treeContainerRef = useRef<HTMLDivElement>(null);
 
@@ -31,11 +70,14 @@ export const TreeView: React.FC<TreeViewProps> = ({
 
   const pathFormat = controlledPathFormat ?? internalPathFormat;
 
-  const handleFormatChange = useCallback((fmt: PathFormat) => {
-    sessionStorage.setItem('toolbox_path_format', fmt);
-    setInternalPathFormat(fmt);
-    onPathFormatChange?.(fmt);
-  }, [onPathFormatChange]);
+  const handleFormatChange = useCallback(
+    (fmt: PathFormat) => {
+      sessionStorage.setItem('toolbox_path_format', fmt);
+      setInternalPathFormat(fmt);
+      onPathFormatChange?.(fmt);
+    },
+    [onPathFormatChange],
+  );
 
   // Expanded paths set
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
@@ -142,7 +184,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
         }
       }, 50);
     },
-    [searchResult.matches]
+    [searchResult.matches],
   );
 
   useEffect(() => {
@@ -202,6 +244,18 @@ export const TreeView: React.FC<TreeViewProps> = ({
     showToast('Copied path', { code: textToCopy });
 
     onSelectPath?.(path, formatted);
+  };
+
+  const handleNodeActivate = (path: PathSegment[], e?: React.MouseEvent) => {
+    if (resolvedClick === 'path') {
+      handlePathfinderItemClick(path, e);
+    } else {
+      setActivePath(path);
+    }
+  };
+
+  const handleEditToken = (path: PathSegment[], kind: 'key' | 'value', newText: string) => {
+    onEditToken?.({ path, kind, newText });
   };
 
   const currentFormattedPath = formatPath(activePath, pathFormat);
@@ -386,8 +440,12 @@ export const TreeView: React.FC<TreeViewProps> = ({
           path={[]}
           expandedPaths={expandedPaths}
           onToggleExpand={toggleExpand}
-          onPathfinderItemClick={mode === 'pathfinder' ? handlePathfinderItemClick : undefined}
-          activePathKey={mode === 'pathfinder' ? JSON.stringify(activePath) : ''}
+          onPathfinderItemClick={handlePathfinderItemClick}
+          onEditToken={canEdit ? handleEditToken : undefined}
+          onNodeActivate={handleNodeActivate}
+          clickAction={resolvedClick}
+          highlightPaths={highlightPaths}
+          activePathKey={JSON.stringify(activePath)}
           searchMatches={searchResult.matches}
           searchCurrentIndex={searchCurrentIndex}
           mode={mode}
@@ -404,6 +462,10 @@ interface TreeNodeProps {
   expandedPaths: Set<string>;
   onToggleExpand: (pathKey: string) => void;
   onPathfinderItemClick?: (path: PathSegment[], e?: React.MouseEvent) => void;
+  onEditToken?: (path: PathSegment[], kind: 'key' | 'value', newText: string) => void;
+  onNodeActivate?: (path: PathSegment[], e?: React.MouseEvent) => void;
+  clickAction: TreeClickAction;
+  highlightPaths?: Set<string>;
   activePathKey: string;
   searchMatches: SearchMatch[];
   searchCurrentIndex: number;
@@ -417,6 +479,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   expandedPaths,
   onToggleExpand,
   onPathfinderItemClick,
+  onEditToken,
+  onNodeActivate,
+  clickAction,
+  highlightPaths,
   activePathKey,
   searchMatches,
   searchCurrentIndex,
@@ -424,11 +490,11 @@ const TreeNode: React.FC<TreeNodeProps> = ({
 }) => {
   const pathKey = JSON.stringify(path);
   const isExpanded = expandedPaths.has(pathKey);
-  const isNodeActive = Boolean(activePathKey && activePathKey === pathKey);
+  const isHighlighted = Boolean(highlightPaths?.has(pathKey));
+  const isNodeActive = Boolean(activePathKey && activePathKey === pathKey) || isHighlighted;
 
   const isSearchCurrentMatch =
-    searchMatches.length > 0 &&
-    JSON.stringify(searchMatches[searchCurrentIndex]?.path) === pathKey;
+    searchMatches.length > 0 && JSON.stringify(searchMatches[searchCurrentIndex]?.path) === pathKey;
 
   const domId = `tree-node-${path.join('-')}`;
 
@@ -441,13 +507,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             isSearchCurrentMatch
               ? 'bg-primary/20 border-l-2 border-primary'
               : isNodeActive
-              ? 'bg-canvas-soft border-l-2 border-primary-soft'
-              : 'hover:bg-canvas-soft'
+                ? 'bg-canvas-soft border-l-2 border-primary-soft'
+                : 'hover:bg-canvas-soft'
           }`}
           onClick={(e) => {
-            if (mode === 'pathfinder' && onPathfinderItemClick) {
-              onPathfinderItemClick(path, e);
-            }
+            if (clickAction === 'path') onPathfinderItemClick?.(path, e);
+            else onNodeActivate?.(path, e);
             onToggleExpand(pathKey);
           }}
         >
@@ -466,16 +531,19 @@ const TreeNode: React.FC<TreeNodeProps> = ({
           </button>
 
           {propKey !== undefined && (
-            <span
-              onClick={(e) => {
-                if (mode === 'pathfinder' && onPathfinderItemClick) {
-                  onPathfinderItemClick(path, e);
+            <>
+              <TokenSpan
+                text={displayKeyToken(String(propKey))}
+                className="text-primary font-semibold"
+                editable={
+                  Boolean(onEditToken) &&
+                  typeof propKey === 'string' &&
+                  !/^\d+$/.test(String(propKey))
                 }
-              }}
-              className="text-primary font-semibold"
-            >
-              "{propKey}":
-            </span>
+                onCommit={(next) => onEditToken?.(path, 'key', next)}
+              />
+              <span className="text-mute">:</span>
+            </>
           )}
 
           <span className="text-mute text-[11px]">
@@ -494,6 +562,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 expandedPaths={expandedPaths}
                 onToggleExpand={onToggleExpand}
                 onPathfinderItemClick={onPathfinderItemClick}
+                onEditToken={onEditToken}
+                onNodeActivate={onNodeActivate}
+                clickAction={clickAction}
+                highlightPaths={highlightPaths}
                 activePathKey={activePathKey}
                 searchMatches={searchMatches}
                 searchCurrentIndex={searchCurrentIndex}
@@ -515,13 +587,12 @@ const TreeNode: React.FC<TreeNodeProps> = ({
             isSearchCurrentMatch
               ? 'bg-primary/20 border-l-2 border-primary'
               : isNodeActive
-              ? 'bg-canvas-soft border-l-2 border-primary-soft'
-              : 'hover:bg-canvas-soft'
+                ? 'bg-canvas-soft border-l-2 border-primary-soft'
+                : 'hover:bg-canvas-soft'
           }`}
           onClick={(e) => {
-            if (mode === 'pathfinder' && onPathfinderItemClick) {
-              onPathfinderItemClick(path, e);
-            }
+            if (clickAction === 'path') onPathfinderItemClick?.(path, e);
+            else onNodeActivate?.(path, e);
             onToggleExpand(pathKey);
           }}
         >
@@ -540,16 +611,19 @@ const TreeNode: React.FC<TreeNodeProps> = ({
           </button>
 
           {propKey !== undefined && (
-            <span
-              onClick={(e) => {
-                if (mode === 'pathfinder' && onPathfinderItemClick) {
-                  onPathfinderItemClick(path, e);
-                }
-              }}
-              className="text-primary font-semibold"
-            >
-              {typeof propKey === 'number' ? `[${propKey}]` : `"${propKey}":`}
-            </span>
+            <>
+              {/^\d+$/.test(String(propKey)) || typeof propKey === 'number' ? (
+                <span className="text-primary font-semibold">{`[${propKey}]`}</span>
+              ) : (
+                <TokenSpan
+                  text={displayKeyToken(String(propKey))}
+                  className="text-primary font-semibold"
+                  editable={Boolean(onEditToken)}
+                  onCommit={(next) => onEditToken?.(path, 'key', next)}
+                />
+              )}
+              <span className="text-mute">:</span>
+            </>
           )}
 
           <span className="text-mute text-[11px]">
@@ -568,6 +642,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
                 expandedPaths={expandedPaths}
                 onToggleExpand={onToggleExpand}
                 onPathfinderItemClick={onPathfinderItemClick}
+                onEditToken={onEditToken}
+                onNodeActivate={onNodeActivate}
+                clickAction={clickAction}
+                highlightPaths={highlightPaths}
                 activePathKey={activePathKey}
                 searchMatches={searchMatches}
                 searchCurrentIndex={searchCurrentIndex}
@@ -584,30 +662,162 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     <div
       id={domId}
       onClick={(e) => {
-        if (mode === 'pathfinder' && onPathfinderItemClick) {
-          onPathfinderItemClick(path, e);
+        // Row click: pathfinder may copy path; do not steal key/value selection
+        if (clickAction === 'path') {
+          onPathfinderItemClick?.(path, e);
+        } else {
+          onNodeActivate?.(path, e);
         }
       }}
       className={`flex items-center gap-2 py-0.5 px-1.5 rounded transition-colors group ${
-        mode === 'pathfinder' ? 'cursor-pointer' : ''
-      } ${
         isSearchCurrentMatch
           ? 'bg-primary/20 border-l-2 border-primary'
           : isNodeActive
-          ? 'bg-canvas-soft border-l-2 border-primary-soft'
-          : 'hover:bg-canvas-soft'
+            ? 'bg-canvas-soft border-l-2 border-primary-soft'
+            : 'hover:bg-canvas-soft'
       }`}
     >
       <span className="w-3.5" />
       {propKey !== undefined && (
-        <span className="text-primary font-semibold">
-          {typeof propKey === 'number' || /^\d+$/.test(propKey) ? `[${propKey}]` : `"${propKey}":`}
-        </span>
+        <>
+          {typeof propKey === 'number' || /^\d+$/.test(String(propKey)) ? (
+            <span className="text-primary font-semibold">{`[${propKey}]`}</span>
+          ) : (
+            <TokenSpan
+              text={displayKeyToken(String(propKey))}
+              className="text-primary font-semibold"
+              editable={Boolean(onEditToken)}
+              onCommit={(next) => onEditToken?.(path, 'key', next)}
+            />
+          )}
+          <span className="text-mute">:</span>
+        </>
       )}
-      {renderPrimitiveValue(node)}
+      <TokenSpan
+        text={displayValueToken(node)}
+        className={valueTokenClass(node)}
+        editable={Boolean(onEditToken) && isPrimitive(node)}
+        onCommit={(next) => onEditToken?.(path, 'value', next)}
+      />
     </div>
   );
 };
+
+/** Single-click selects full token text; double-click enters inline edit. No auto-copy. */
+const TokenSpan: React.FC<{
+  text: string;
+  className?: string;
+  editable?: boolean;
+  onCommit?: (next: string) => void;
+}> = ({ text, className, editable, onCommit }) => {
+  const spanRef = React.useRef<HTMLSpanElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(text);
+
+  React.useEffect(() => {
+    if (!editing) setDraft(text);
+  }, [text, editing]);
+
+  React.useEffect(() => {
+    if (editing) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      });
+    }
+  }, [editing]);
+
+  const selectAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const el = spanRef.current;
+    if (!el) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  };
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!editable || !onCommit) return;
+    setDraft(text);
+    setEditing(true);
+  };
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== text) onCommit?.(draft);
+  };
+
+  const cancel = () => {
+    setDraft(text);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancel();
+          }
+        }}
+        className={`bg-canvas border border-primary rounded-xs px-1 py-0 font-mono text-xs text-ink min-w-[3rem] max-w-[min(100%,28rem)] outline-none ${className || ''}`}
+        size={Math.max(draft.length, 4)}
+      />
+    );
+  }
+
+  return (
+    <span
+      ref={spanRef}
+      onClick={selectAll}
+      onDoubleClick={startEdit}
+      className={`cursor-text rounded-xs px-0.5 -mx-0.5 hover:bg-primary/10 ${className || ''}`}
+      title={editable ? 'Click to select · Double-click to edit' : 'Click to select'}
+    >
+      {text}
+    </span>
+  );
+};
+
+function isPrimitive(node: ASTNode): boolean {
+  return (
+    node.type === 'string' ||
+    node.type === 'number' ||
+    node.type === 'boolean' ||
+    node.type === 'null'
+  );
+}
+
+function valueTokenClass(node: ASTNode): string {
+  switch (node.type) {
+    case 'string':
+      return 'text-ink';
+    case 'number':
+      return 'text-primary-soft font-medium';
+    case 'boolean':
+      return 'text-amber-400 font-medium';
+    case 'null':
+      return 'text-mute italic';
+    default:
+      return 'text-mute';
+  }
+}
 
 function renderPrimitiveValue(node: ASTNode) {
   switch (node.type) {
@@ -616,7 +826,11 @@ function renderPrimitiveValue(node: ASTNode) {
     case 'number':
       return <span className="text-primary-soft font-mono font-medium">{node.raw}</span>;
     case 'boolean':
-      return <span className="text-amber-400 font-mono font-medium">{node.value ? 'true' : 'false'}</span>;
+      return (
+        <span className="text-amber-400 font-mono font-medium">
+          {node.value ? 'true' : 'false'}
+        </span>
+      );
     case 'null':
       return <span className="text-mute font-mono italic">null</span>;
     default:

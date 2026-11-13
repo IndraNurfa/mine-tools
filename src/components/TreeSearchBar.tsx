@@ -80,10 +80,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
           className="bg-transparent text-ink placeholder-mute focus:outline-none w-full text-xs font-mono"
         />
         {query && (
-          <button
-            onClick={() => onQueryChange('')}
-            className="text-mute hover:text-ink p-0.5"
-          >
+          <button onClick={() => onQueryChange('')} className="text-mute hover:text-ink p-0.5">
             <X className="w-3.5 h-3.5" />
           </button>
         )}
@@ -92,7 +89,11 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       {/* Match count */}
       <div className="font-mono text-xs text-mute px-2 shrink-0">
         {totalFound === 0 ? (
-          query ? 'No matches' : ''
+          query ? (
+            'No matches'
+          ) : (
+            ''
+          )
         ) : (
           <span>
             <strong className="text-primary">{currentIndex + 1}</strong> of{' '}
@@ -132,7 +133,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       </div>
 
       {/* Scope toggle (keys, values, both) */}
-      <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5 shrink-0">
+      {/* <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5 shrink-0">
         <button
           onClick={() => onScopeChange('both')}
           className={`px-2 py-0.5 rounded-xs transition-colors ${
@@ -157,7 +158,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
         >
           Values
         </button>
-      </div>
+      </div> */}
 
       {/* Toggles: Case, Regex */}
       <div className="flex items-center gap-1 shrink-0">
@@ -213,7 +214,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       {showMatchesList && matches.length > 0 && (
         <div className="absolute top-full left-0 right-0 z-40 bg-canvas border-b border-hairline shadow-modal-stack max-h-60 overflow-y-auto">
           <div className="px-3 py-2 border-b border-hairline/50 text-[11px] text-mute flex justify-between items-center bg-canvas-soft">
-            <span className="font-semibold uppercase tracking-wider text-[10px]">
+            <span className="font-semibold uppercase tracking-wider text-[11px]">
               Found {isCapped ? '1000+' : matches.length} matches — Click any path to jump
             </span>
             <button
@@ -235,11 +236,13 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
                     setShowMatchesList(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 flex items-center justify-between gap-4 hover:bg-canvas-soft transition-colors ${
-                    isSelected ? 'bg-canvas-soft border-l-2 border-primary text-primary' : 'text-ink'
+                    isSelected
+                      ? 'bg-canvas-soft border-l-2 border-primary text-primary'
+                      : 'text-ink'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <span className="text-[10px] uppercase font-semibold text-mute px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline">
+                    <span className="text-[11px] uppercase font-semibold text-mute px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline">
                       {m.target}
                     </span>
                     <span className="font-medium truncate">{formatted || '<root>'}</span>

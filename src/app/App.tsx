@@ -4,7 +4,8 @@ import { useRouter } from './router.ts';
 import { ToastProvider } from '../components/Toast.tsx';
 import { CommandPalette } from '../components/CommandPalette.tsx';
 import { Launcher } from './Launcher.tsx';
-import { Zap, Home, Command } from 'lucide-react';
+import { Zap, Home, Command, RotateCcw } from 'lucide-react';
+import { usePersistentState, clearStored } from '../lib/storage.ts';
 
 const INITIAL_INPUT = `{
   // Welcome to Developer Toolbox
@@ -24,8 +25,9 @@ const INITIAL_INPUT = `{
 
 export const App: React.FC = () => {
   const { currentPath, navigate } = useRouter();
-  const [sharedInput, setSharedInput] = useState<string>(INITIAL_INPUT);
+  const [sharedInput, setSharedInput] = usePersistentState<string>('formatter', 'input', INITIAL_INPUT);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [resetNonce, setResetNonce] = useState(0);
 
   const isHome = currentPath === '/';
   const activeTool = TOOL_REGISTRY.find((t) => t.route === currentPath);
@@ -80,7 +82,7 @@ export const App: React.FC = () => {
                     <span className="font-semibold text-ink text-sm tracking-tight block">
                       TOOLBOX
                     </span>
-                    <span className="text-[10px] text-mute block -mt-0.5 tracking-[0.5px]">
+                    <span className="text-[11px] text-mute block -mt-0.5 tracking-[0.5px]">
                       DEV UTILITIES
                     </span>
                   </div>
@@ -92,7 +94,7 @@ export const App: React.FC = () => {
                 {groupTools().map(({ group, tools }) => (
                   <div key={group}>
                     <div className="px-3 pb-1.5">
-                      <span className="text-[10px] font-semibold uppercase tracking-[2.52px] text-mute">
+                      <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">
                         {group}
                       </span>
                     </div>
@@ -136,19 +138,19 @@ export const App: React.FC = () => {
 
             {/* Sidebar Footer / Keyboard Shortcuts */}
             <div className="p-3 border-t border-hairline bg-canvas space-y-2">
-              <div className="text-[10px] uppercase font-semibold tracking-wider text-mute px-1">
+              <div className="text-[11px] uppercase font-semibold tracking-wider text-mute px-1">
                 Shortcuts
               </div>
               <div className="font-mono text-[11px] text-mute space-y-1 px-1">
                 <div className="flex justify-between items-center">
                   <span>Jump to tool</span>
-                  <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[10px] text-ink">
+                  <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
                     <Command className="w-2.5 h-2.5" />K
                   </kbd>
                 </div>
                 <div className="flex justify-between items-center">
                   <span>Find in AST</span>
-                  <kbd className="px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[10px] text-ink">
+                  <kbd className="px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
                     Ctrl+F
                   </kbd>
                 </div>
@@ -182,6 +184,22 @@ export const App: React.FC = () => {
                 </span>
               </div>
 
+              {activeTool.resettable && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!window.confirm(`Reset saved data for ${activeTool.name}?`)) return;
+                    clearStored(activeTool.id);
+                    if (activeTool.id === 'formatter') setSharedInput(INITIAL_INPUT);
+                    setResetNonce((n) => n + 1);
+                  }}
+                  className="mr-2 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-hairline bg-canvas-soft text-mute hover:text-ink hover:border-primary/40 transition-colors text-xs"
+                  title="Clear this tool's saved input and settings"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Reset</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={openPalette}
@@ -189,7 +207,7 @@ export const App: React.FC = () => {
                 title="Jump to tool (⌘K)"
               >
                 <SearchHint />
-                <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[10px] text-ink font-mono">
+                <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-ink font-mono">
                   <Command className="w-2.5 h-2.5" />K
                 </kbd>
               </button>
@@ -207,7 +225,7 @@ export const App: React.FC = () => {
                 {(() => {
                   const ToolComponent = activeTool.component;
                   return (
-                    <ToolComponent sharedInput={sharedInput} onSharedInputChange={setSharedInput} />
+                    <ToolComponent key={`${activeTool.id}:${resetNonce}`} sharedInput={sharedInput} onSharedInputChange={setSharedInput} />
                   );
                 })()}
               </Suspense>

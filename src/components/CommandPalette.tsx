@@ -122,7 +122,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[10px] text-mute font-mono shrink-0">
+          <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-mute font-mono shrink-0">
             esc
           </kbd>
         </div>
@@ -137,7 +137,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             Array.from(grouped.entries()).map(([group, tools]) => (
               <div key={group} className="mb-1 last:mb-0">
                 <div className="px-4 pt-2 pb-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-[2px] text-mute">
+                  <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">
                     {group}
                   </span>
                 </div>
@@ -189,15 +189,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Footer */}
         <div className="flex items-center gap-3 px-4 py-2 border-t border-hairline text-[11px] text-mute font-mono">
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded-xs bg-canvas border border-hairline text-[10px] text-ink">↑↓</kbd>
+            <kbd className="px-1 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-ink">↑↓</kbd>
             move
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="px-1 py-0.5 rounded-xs bg-canvas border border-hairline text-[10px] text-ink">↵</kbd>
+            <kbd className="px-1 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-ink">↵</kbd>
             open
           </span>
           <span className="flex items-center gap-1 ml-auto">
-            <kbd className="px-1 py-0.5 rounded-xs bg-canvas border border-hairline text-[10px] text-ink">esc</kbd>
+            <kbd className="px-1 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-ink">esc</kbd>
             close
           </span>
         </div>

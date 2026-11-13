@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { usePersistentState } from '../../lib/storage.ts';
 import { Editor } from '../../components/Editor.tsx';
 import { TreeView } from '../../components/TreeView.tsx';
 import { ErrorBanner } from '../../components/ErrorBanner.tsx';
@@ -49,7 +50,7 @@ export const PathFinderTool: React.FC<PathFinderToolProps> = ({
   const { showToast } = useToast();
 
   // Local input state (PathFinder uses its own input, not shared)
-  const [input, setInput] = useState<string>(sharedInput || SAMPLE_JSON);
+  const [input, setInput] = usePersistentState<string>('path-finder', 'input', sharedInput || SAMPLE_JSON);
 
   const [ast, setAst] = useState<ASTNode | null>(null);
   const [parseError, setParseError] = useState<{
@@ -163,7 +164,7 @@ export const PathFinderTool: React.FC<PathFinderToolProps> = ({
                 <FileCode className="w-3.5 h-3.5 text-primary" />
                 Input
               </span>
-              <span className="text-[10px] text-mute font-mono bg-canvas px-1.5 py-0.5 rounded-xs border border-hairline">
+              <span className="text-[11px] text-mute font-mono bg-canvas px-1.5 py-0.5 rounded-xs border border-hairline">
                 {sizeMetrics.inputFormatted}
               </span>
             </div>
