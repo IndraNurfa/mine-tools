@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import MonacoEditor, { OnMount, loader } from '@monaco-editor/react';
+import MonacoEditor, { OnMount } from '@monaco-editor/react';
 
 interface EditorProps {
   value: string;
@@ -29,32 +29,6 @@ export const Editor: React.FC<EditorProps> = ({
     if (editorRef) {
       editorRef.current = editor;
     }
-
-    // Define Voltagent Design theme
-    monaco.editor.defineTheme('toolbox-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'string.key.json', foreground: '00d992', fontStyle: 'bold' },
-        { token: 'string.value.json', foreground: 'f2f2f2' },
-        { token: 'number.json', foreground: '2fd6a1' },
-        { token: 'keyword.json', foreground: '00d992' },
-        { token: 'comment', foreground: '8b949e', fontStyle: 'italic' },
-      ],
-      colors: {
-        'editor.background': '#101010',
-        'editor.foreground': '#f2f2f2',
-        'editor.lineHighlightBackground': '#1a1a1a',
-        'editorLineNumber.foreground': '#3d3a39',
-        'editorLineNumber.activeForeground': '#00d992',
-        'editor.selectionBackground': '#3d3a39',
-        'editor.inactiveSelectionBackground': '#222222',
-        'editorCursor.foreground': '#00d992',
-        'editorWhitespace.foreground': '#222222',
-        'editorIndentGuide.background': '#1f1f1f',
-        'editorIndentGuide.activeBackground': '#3d3a39',
-      },
-    });
 
     monaco.editor.setTheme('toolbox-dark');
 
@@ -111,6 +85,7 @@ export const Editor: React.FC<EditorProps> = ({
           renderWhitespace: 'none',
           padding: { top: 12, bottom: 12 },
         }}
+        loading={<div className="w-full h-full bg-canvas" />}
         onMount={handleEditorDidMount}
       />
     </div>

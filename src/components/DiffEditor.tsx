@@ -84,6 +84,7 @@ export const DiffEditor: React.FC<DiffEditorProps> = ({
           scrollBeyondLastLine: false,
           padding: { top: 12, bottom: 12 },
         }}
+        loading={<div className="w-full h-full bg-canvas" />}
         onMount={handleMount}
       />
     </div>
