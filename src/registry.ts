@@ -372,3 +372,10 @@ export function groupTools(
   }
   return Array.from(map.entries()).map(([group, tools]) => ({ group, tools }));
 }
+
+/** Tools whose name, description, group or id contains `query`. */
+export function searchTools(query: string): ToolItem[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return TOOL_REGISTRY;
+  return TOOL_REGISTRY.filter((t) => `${t.name} ${t.description} ${t.group} ${t.id}`.toLowerCase().includes(q));
+}

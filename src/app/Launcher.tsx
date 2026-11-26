@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { TOOL_REGISTRY, groupTools } from '../registry.ts';
+import { groupTools, searchTools } from '../registry.ts';
 import { Zap, Search } from 'lucide-react';
 import { shortcut } from '../lib/platform.ts';
 
@@ -37,17 +37,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
   }, []);
 
   // Filter tools by search query
-  const filteredTools = useMemo(() => {
-    if (!query.trim()) return TOOL_REGISTRY;
-    const q = query.toLowerCase();
-    return TOOL_REGISTRY.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q) ||
-        t.group.toLowerCase().includes(q) ||
-        t.id.toLowerCase().includes(q),
-    );
-  }, [query]);
+  const filteredTools = useMemo(() => searchTools(query), [query]);
 
   const grouped = useMemo(() => groupTools(filteredTools), [filteredTools]);
 

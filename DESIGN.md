@@ -85,7 +85,7 @@ Sentence case everywhere except labels.
 | --- | --- |
 | App header | 56 px |
 | Pane header / toolbar | 40 px minimum, grows when it wraps |
-| Sidebar | 256 px expanded, 56 px icon rail |
+| Tool menu | Full width under the header; 2, 3 or 5 columns |
 | Control height | 28 px with a mouse, 40 px on `pointer: coarse` |
 
 ### Responsive rules
@@ -94,15 +94,23 @@ The smallest supported width is **768 px** (tablet). There is no phone layout.
 
 | Width | Behaviour |
 | --- | --- |
-| 768 – 1023 | Icon rail. Header description hidden |
-| 1024 – 1279 | Icon rail. Two-pane tools sit side by side |
-| 1280 and up | Sidebar expanded unless the user collapsed it |
+| 768 – 1023 | Pinned tools hidden from the header (still listed first in the menu). Menu has 2 columns |
+| 1024 – 1279 | Pinned tools in the header. Menu has 3 columns |
+| 1280 and up | Menu has 5 columns |
 
 - Toolbars use `flex-wrap`. Nothing may be pushed off-screen.
-- The tool name never truncates; the description does.
+- The tool name never truncates.
 - Editor comparisons stay side by side at every width.
 - Use `Page`, `Panel`, `AutoGrid` and `Stat`. Never wrap a tool in `max-w-*`.
 - Every tool opens with a useful sample, never an empty box.
+
+### Navigation
+
+There is no sidebar: the tool gets the full window below one 56 px header.
+
+- **Header:** home, the tool name (opens the menu), pinned tools, reset and **All tools**.
+- **Tool menu** (`⌘K` / `Ctrl+K`): every tool at once, grouped, with pinned tools first. Typing filters, arrows move, Enter opens, Escape closes.
+- **Pins:** a star beside each tool in the menu.
 
 ## Shape and depth
 
@@ -118,8 +126,8 @@ Always name the size; bare `rounded` is not used.
 | Level | Treatment | Use |
 | --- | --- | --- |
 | Flat | 1 px `hairline` | Panels, cards, buttons |
-| Glow | `shadow-inset-glow` | Active navigation item, selected launcher card |
-| Modal | `shadow-modal-stack` + `bg-black/60` backdrop | Dialogs, palette, toasts |
+| Glow | `shadow-inset-glow` | Selected launcher card |
+| Modal | `shadow-modal-stack` + `bg-black/60` backdrop | Dialogs, tool menu, toasts |
 
 ## Components
 
@@ -167,7 +175,7 @@ A pane is a header (label left, actions right) above a body that fills the remai
 
 | Surface | Motion |
 | --- | --- |
-| Command palette, tool switching, tree expand, any keyboard action | None |
+| Tool menu, tool switching, tree expand, any keyboard action | None |
 | Hover and selection color | `transition-colors`, 150 ms |
 | Button press | Transform, 120 ms ease-out |
 | Dialog | Fade and `scale(0.97)` to 1, 180 ms in. Closes instantly |
