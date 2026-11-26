@@ -129,6 +129,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
             <Search className="w-4 h-4 text-mute shrink-0" />
             <input
               ref={searchRef}
+              data-focus="quiet"
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

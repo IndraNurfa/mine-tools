@@ -140,7 +140,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({
   return (
     <div className="flex flex-col h-full w-full min-w-0">
       {/* Pane header */}
-      <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
+      <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
             {label}
@@ -385,9 +385,9 @@ export const DiffTool: React.FC = () => {
   return (
     <div className="flex flex-col h-full w-full bg-canvas overflow-hidden">
       {/* ── Toolbar ── */}
-      <div className="h-11 border-b border-hairline bg-canvas-soft px-4 flex items-center justify-between gap-3 text-xs shrink-0">
+      <div className="min-h-11 py-1.5 border-b border-hairline bg-canvas-soft px-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs shrink-0">
         {/* Left actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Diff mode switch */}
           <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
             <button
@@ -500,7 +500,7 @@ export const DiffTool: React.FC = () => {
           <>
             {/* Left tree */}
             <div className="flex flex-col min-w-0 w-1/2 overflow-hidden">
-              <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between text-xs shrink-0">
+              <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-x-2 text-xs shrink-0">
                 <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
                   Original (Left)
                 </span>
@@ -536,7 +536,7 @@ export const DiffTool: React.FC = () => {
             </div>
             {/* Right tree */}
             <div className="flex flex-col min-w-0 w-1/2 overflow-hidden">
-              <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between text-xs shrink-0">
+              <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-x-2 text-xs shrink-0">
                 <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
                   Modified (Right)
                 </span>
@@ -610,7 +610,7 @@ export const DiffTool: React.FC = () => {
                 style={{ width: '30%' }}
               >
                 {/* Panel header */}
-                <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
+                <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
                   <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
                     Changes
                   </span>

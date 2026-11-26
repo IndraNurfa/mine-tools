@@ -11,7 +11,7 @@ interface Note {
 const newNote = (n: number): Note => ({ id: Math.random().toString(36).slice(2, 9), title: `Note ${n}`, body: '' });
 
 export const ScratchpadTool: React.FC = () => {
-  const [notes, setNotes] = usePersistentState<Note[]>('scratchpad', 'notes', () => [newNote(1)]);
+  const [notes, setNotes] = usePersistentState<Note[]>('scratchpad', 'notes', () => [newNote(1)], (ns) => ns.length > 0);
   const [activeId, setActiveId] = usePersistentState<string>('scratchpad', 'active', '');
   const active = notes.find((n) => n.id === activeId) ?? notes[0]!;
 
@@ -47,7 +47,7 @@ export const ScratchpadTool: React.FC = () => {
                 e.stopPropagation();
                 if (!n.body || window.confirm(`Delete "${n.title}"?`)) remove(n.id);
               }}
-              className="p-0.5 rounded-xs opacity-0 group-hover:opacity-100 hover:text-red-400"
+              className="p-0.5 rounded-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-red-400"
             >
               <X className="w-3 h-3" />
             </button>

@@ -158,7 +158,7 @@ export const PathFinderTool: React.FC<PathFinderToolProps> = ({
       <div className="flex-1 flex min-h-0 divide-x divide-hairline">
         {/* Left Pane: Input */}
         <div className="w-1/2 flex flex-col min-w-0 bg-canvas">
-          <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
+          <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-ink uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                 <FileCode className="w-3.5 h-3.5 text-primary" />
@@ -169,7 +169,7 @@ export const PathFinderTool: React.FC<PathFinderToolProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 onClick={handleLoadSample}
                 className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"

@@ -1,5 +1,9 @@
 import { base64Decode } from '../encode/encode.ts';
 
+/** Demo token the decoder opens with. */
+export const SAMPLE_JWT =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNzAwMDAwMDAwLCJleHAiOjIwMDAwMDAwMDB9.signature';
+
 export interface DecodedJwt {
   header: Record<string, unknown>;
   payload: Record<string, unknown>;

@@ -18,6 +18,10 @@ export const THEME = 'toolbox-dark';
 loader
   .init()
   .then((monaco) => {
+    // Loose JSON is valid input here and core/parse reports real errors, so
+    // Monaco's strict JSON diagnostics would only add false error marks.
+    monaco.json.jsonDefaults.setDiagnosticsOptions({ validate: false });
+
     monaco.editor.defineTheme(THEME, {
       base: 'vs-dark',
       inherit: true,

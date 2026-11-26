@@ -6,6 +6,8 @@ import { ResponseView } from '../../components/ResponseView.tsx';
 import { VarsPanel } from '../../components/VarsPanel.tsx';
 import { PaneHeader, Segmented, TextBtn, textareaCls, usePaste } from '../../components/ui.tsx';
 import { saveStored, usePersistentState } from '../../lib/storage.ts';
+import { isStringRecord } from '../../core/http/validate.ts';
+import { RememberSecrets } from '../../components/RememberSecrets.tsx';
 
 const SAMPLE = `curl -X POST 'https://httpbin.org/post' \\
   -H 'Content-Type: application/json' \\
@@ -14,7 +16,7 @@ const SAMPLE = `curl -X POST 'https://httpbin.org/post' \\
 
 export const CurlTool: React.FC = () => {
   const [input, setInput] = usePersistentState('curl', 'input', SAMPLE);
-  const [vars, setVars] = usePersistentState<Record<string, string>>('curl', 'vars', {});
+  const [vars, setVars] = usePersistentState<Record<string, string>>('curl', 'vars', {}, isStringRecord);
   const [target, setTarget] = usePersistentState<CodeTarget>('curl', 'target', 'fetch');
   const [res, setRes] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,7 +66,14 @@ export const CurlTool: React.FC = () => {
             title="cURL command"
             onPaste={paste}
             onClear={() => setInput('')}
-            extra={parsed && 'error' in parsed ? <span className="text-xs text-red-400 mr-2">{parsed.error}</span> : undefined}
+            extra={
+              <>
+                {parsed && 'error' in parsed && <span className="text-xs text-red-400 mr-2">{parsed.error}</span>}
+                <span className="mr-2">
+                  <RememberSecrets />
+                </span>
+              </>
+            }
           />
           <textarea
             autoFocus

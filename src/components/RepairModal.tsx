@@ -1,6 +1,7 @@
 import React from 'react';
 import { Wrench, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { RepairItem } from '../core/repair/repair.ts';
+import { useDialogFocus } from './useDialogFocus.ts';
 
 interface RepairModalProps {
   isOpen: boolean;
@@ -17,10 +18,18 @@ export const RepairModal: React.FC<RepairModalProps> = ({
   hasTruncation,
   onApply,
 }) => {
+  const dialogRef = useDialogFocus<HTMLDivElement>(isOpen);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Smart Repair Report"
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
       <div className="bg-canvas border border-hairline rounded-md shadow-modal-stack w-full max-w-xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-5 py-4 border-b border-hairline flex items-center justify-between bg-canvas-soft">
@@ -37,6 +46,7 @@ export const RepairModal: React.FC<RepairModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             className="p-1.5 text-mute hover:text-ink rounded-sm transition-colors"
           >
             <X className="w-4 h-4" />
