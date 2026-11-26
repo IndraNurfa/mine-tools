@@ -57,7 +57,7 @@ npm run build
 
 ```
 src/
-  app/            Layout shell, sidebar navigation, keyboard shortcuts
+  app/            Layout shell, header, tool menu, keyboard shortcuts
   core/
     parse/        In-house loose JSON parser -> AST with raw numbers and source offsets
     path/         Path formatters (JS dot/bracket, JSONPath, Gjson)

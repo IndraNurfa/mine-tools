@@ -77,7 +77,7 @@ button:disabled:not(.monaco-editor *) {
       input:not([type='checkbox'], [type='radio']),
       label:has(input[type='checkbox']),
       header a,
-      aside a
+      [role='dialog'] a
     ):not(.monaco-editor *) {
     min-height: 40px;
   }

@@ -2,13 +2,10 @@ import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { TOOL_REGISTRY } from '../registry.ts';
 import { useRouter } from './router.ts';
 import { ToastProvider } from '../components/Toast.tsx';
-import { CommandPalette } from '../components/CommandPalette.tsx';
 import { Launcher } from './Launcher.tsx';
-import { Sidebar } from './Sidebar.tsx';
+import { AppHeader } from './AppHeader.tsx';
+import { ToolMenu } from './ToolMenu.tsx';
 import { ToolErrorBoundary } from '../components/ToolErrorBoundary.tsx';
-import { Home, RotateCcw } from 'lucide-react';
-import { shortcut } from '../lib/platform.ts';
-import { TextBtn } from '../components/ui.tsx';
 import { usePersistentState, clearStored } from '../lib/storage.ts';
 
 const INITIAL_INPUT = `{
@@ -30,7 +27,8 @@ const INITIAL_INPUT = `{
 export const App: React.FC = () => {
   const { currentPath, navigate } = useRouter();
   const [sharedInput, setSharedInput] = usePersistentState<string>('formatter', 'input', INITIAL_INPUT);
-  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pinned, setPinned] = usePersistentState<string[]>('shell', 'pinnedTools', ['formatter', 'diff', 'jwt']);
   const [resetNonce, setResetNonce] = useState(0);
 
   const isHome = currentPath === '/';
@@ -42,20 +40,25 @@ export const App: React.FC = () => {
     setResetNonce((n) => n + 1);
   };
 
-  // Cmd/Ctrl+K opens the jump palette from anywhere
+  // Cmd/Ctrl+K opens the tool menu from anywhere
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setPaletteOpen((open) => !open);
+        setMenuOpen((open) => !open);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const openPalette = useCallback(() => setPaletteOpen(true), []);
-  const closePalette = useCallback(() => setPaletteOpen(false), []);
+  const toggleMenu = useCallback(() => setMenuOpen((open) => !open), []);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const togglePin = (id: string) =>
+    setPinned((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
+  // Going anywhere (a pinned tool, Home, browser back) closes the menu.
+  useEffect(() => setMenuOpen(false), [currentPath]);
 
   // Unknown tool route → land on launcher
   useEffect(() => {
@@ -71,64 +74,20 @@ export const App: React.FC = () => {
           <Launcher onNavigate={navigate} />
         </div>
       ) : (
-        <div className="flex h-screen w-screen bg-canvas text-ink overflow-hidden font-sans select-none">
-          <Sidebar currentPath={currentPath} onNavigate={navigate} />
+        <div className="flex flex-col h-screen w-screen bg-canvas text-ink overflow-hidden font-sans select-none">
+          <AppHeader
+            tool={activeTool}
+            pinned={pinned}
+            menuOpen={menuOpen}
+            onToggleMenu={toggleMenu}
+            onNavigate={navigate}
+            onReset={() => {
+              if (!window.confirm(`Reset saved data for ${activeTool.name}?`)) return;
+              resetTool(activeTool.id);
+            }}
+          />
 
-          {/* Main Content Area */}
-          <main className="flex-1 flex flex-col min-w-0 bg-canvas overflow-hidden">
-            {/* Top Header Bar */}
-            <header className="h-14 border-b border-hairline bg-canvas px-4 lg:px-6 flex items-center justify-between gap-3 shrink-0">
-              <div className="flex flex-1 items-center gap-3 min-w-0">
-                <a
-                  href="/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate('/');
-                  }}
-                  title="Back to launcher"
-                  className="flex items-center gap-1.5 text-mute hover:text-ink transition-colors shrink-0"
-                >
-                  <Home className="w-3.5 h-3.5" />
-                  <span className="text-xs hidden sm:inline">Home</span>
-                </a>
-                <span className="text-hairline">/</span>
-                <h1 className="text-sm font-semibold text-ink-strong whitespace-nowrap">
-                  {activeTool.name}
-                </h1>
-                <span className="text-mute text-xs hidden lg:inline truncate min-w-0">
-                  — {activeTool.description}
-                </span>
-              </div>
-
-              {activeTool.resettable && (
-                <TextBtn
-                  danger
-                  className="shrink-0"
-                  onClick={() => {
-                    if (!window.confirm(`Reset saved data for ${activeTool.name}?`)) return;
-                    resetTool(activeTool.id);
-                  }}
-                  title="Clear this tool's saved input and settings"
-                  aria-label="Reset"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">Reset</span>
-                </TextBtn>
-              )}
-              <button
-                type="button"
-                onClick={openPalette}
-                className="shrink-0 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-sm border border-hairline bg-canvas-soft text-mute hover:text-ink hover:border-primary/40 transition-colors text-xs"
-                title={`Jump to tool (${shortcut('K')})`}
-                aria-label="Jump to tool"
-              >
-                <SearchHint />
-                <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-ink font-mono">
-                  {shortcut('K')}
-                </kbd>
-              </button>
-            </header>
-
+          <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Active Tool View */}
             <div className="flex-1 min-h-0 relative">
               <ToolErrorBoundary
@@ -159,31 +118,15 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      <CommandPalette open={paletteOpen} onClose={closePalette} onNavigate={navigate} />
+      <ToolMenu
+        open={menuOpen}
+        onClose={closeMenu}
+        onNavigate={navigate}
+        currentPath={currentPath}
+        pinned={pinned}
+        onTogglePin={togglePin}
+        belowHeader={!isHome && Boolean(activeTool)}
+      />
     </ToastProvider>
   );
 };
-
-/** Small search icon for the header jump button */
-function SearchHint() {
-  return (
-    <span className="flex items-center gap-1.5">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-mute"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <span className="hidden lg:inline whitespace-nowrap">Jump to tool</span>
-    </span>
-  );
-}
