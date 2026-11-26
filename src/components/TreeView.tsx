@@ -277,8 +277,8 @@ export const TreeView: React.FC<TreeViewProps> = ({
       {/* ── TOOLBAR / PATH BAR ── */}
       {mode === 'pathfinder' ? (
         <div className="border-b border-hairline bg-canvas-soft p-3 flex flex-col gap-2 shrink-0">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <div className="flex items-center gap-2 flex-1 min-w-[220px]">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-mute shrink-0">
                 Selected Path:
               </span>
@@ -316,7 +316,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
           </div>
 
           {/* Format Selector & Tree Actions Row */}
-          <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-hairline/40">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-hairline/40">
             <div className="flex items-center gap-2">
               <span className="text-mute text-[11px]">Format:</span>
               <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
@@ -386,7 +386,7 @@ export const TreeView: React.FC<TreeViewProps> = ({
         </div>
       ) : (
         /* Inspector Mode Header: Only Expand / Collapse controls */
-        <div className="h-9 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between text-xs shrink-0">
+        <div className="min-h-9 py-1 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
           <span className="text-[11px] font-semibold text-mute uppercase tracking-wider">
             Tree View
           </span>

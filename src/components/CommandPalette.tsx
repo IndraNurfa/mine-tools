@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { TOOL_REGISTRY, ToolItem } from '../registry.ts';
 import { Search, CornerDownLeft } from 'lucide-react';
+import { useDialogFocus } from './useDialogFocus.ts';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -15,16 +16,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Reset and focus when opened
+  const dialogRef = useDialogFocus<HTMLDivElement>(open);
+
+  // Reset when opened (useDialogFocus focuses the search input)
   useEffect(() => {
     if (open) {
       setQuery('');
       setSelectedIndex(0);
-      // Defer focus so the dialog is in the DOM
-      requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
 
@@ -95,6 +95,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   return (
     <div
+      ref={dialogRef}
+      onKeyDown={handleKeyDown}
       className="fixed inset-0 z-[100] flex items-start justify-center pt-[12vh] px-4"
       role="dialog"
       aria-modal="true"
@@ -112,11 +114,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <div className="flex items-center gap-2.5 px-4 py-3 border-b border-hairline">
           <Search className="w-4 h-4 text-mute shrink-0" />
           <input
-            ref={inputRef}
+            data-focus="quiet"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder="Search tools…"
             className="bg-transparent text-ink placeholder-mute focus:outline-none w-full text-sm"
             autoComplete="off"
@@ -152,6 +153,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       data-palette-idx={thisIdx}
                       onClick={() => openTool(tool.route)}
                       onMouseEnter={() => setSelectedIndex(thisIdx)}
+                      onFocus={() => setSelectedIndex(thisIdx)}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                         isSelected
                           ? 'bg-primary/10 text-ink'

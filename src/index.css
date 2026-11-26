@@ -28,3 +28,18 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #4f5d75;
 }
+
+/*
+ * Keyboard focus ring. Declared after the utilities so it wins over
+ * `focus:outline-none`. Inset, so scrolling and clipped containers can't hide it.
+ * Monaco draws its own; `data-focus="quiet"` is for inputs whose wrapper already
+ * shows focus.
+ */
+:is(a, button, input, select, textarea, [tabindex]):not(.monaco-editor *, [data-focus='quiet']):focus-visible {
+  outline: 2px solid #2fd6a1;
+  outline-offset: -2px;
+}
+
+input[type='checkbox']:focus-visible {
+  outline-offset: 2px !important;
+}

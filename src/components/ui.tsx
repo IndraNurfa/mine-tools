@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Copy, ClipboardPaste, Trash2, Upload } from 'lucide-react';
+import { Copy, ClipboardPaste, Trash2, Upload, Eye, EyeOff } from 'lucide-react';
 import { useToast } from './Toast.tsx';
 
 export function useCopy() {
@@ -158,6 +158,29 @@ export const textareaCls =
   'flex-1 w-full resize-none bg-canvas text-ink text-sm font-mono p-4 focus:outline-none placeholder-mute';
 export const inputCls =
   'bg-canvas-soft border border-hairline rounded-sm px-2 py-1.5 text-ink text-xs font-mono focus:outline-none focus:border-primary';
+
+/** Masked input for tokens and passwords, with a show/hide toggle. Fills its flex row. */
+export const SecretInput: React.FC<
+  React.InputHTMLAttributes<HTMLInputElement> & { wrapperClassName?: string }
+> = ({ wrapperClassName = '', className = '', ...props }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <span className={`flex-1 min-w-0 flex items-center gap-1 ${wrapperClassName}`}>
+      <input
+        {...props}
+        type={show ? 'text' : 'password'}
+        autoComplete="off"
+        data-1p-ignore
+        data-lpignore="true"
+        spellCheck={false}
+        className={`${inputCls} flex-1 min-w-0 ${className}`}
+      />
+      <IconBtn title={show ? 'Hide value' : 'Show value'} onClick={() => setShow((s) => !s)}>
+        {show ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+      </IconBtn>
+    </span>
+  );
+};
 
 /** Value row with a copy button: used for multi-format outputs. */
 export const CopyRow: React.FC<{ label: string; value: string; dim?: boolean }> = ({

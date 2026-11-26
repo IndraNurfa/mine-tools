@@ -1,7 +1,8 @@
 import React from 'react';
 import { Plus, X } from 'lucide-react';
 import type { KV } from '../core/http/request.ts';
-import { TextBtn, inputCls } from './ui.tsx';
+import { SecretInput, TextBtn, inputCls } from './ui.tsx';
+import { isSensitiveName } from '../core/http/redact.ts';
 
 export const KvEditor: React.FC<{
   items: KV[];
@@ -40,13 +41,22 @@ export const KvEditor: React.FC<{
             spellCheck={false}
             className={`${inputCls} w-2/5 ${it.enabled ? '' : 'opacity-50'}`}
           />
-          <input
-            value={it.value}
-            onChange={(e) => patch(i, { value: e.target.value })}
-            placeholder={valuePlaceholder}
-            spellCheck={false}
-            className={`${inputCls} flex-1 ${it.enabled ? '' : 'opacity-50'}`}
-          />
+          {isSensitiveName(it.key) ? (
+            <SecretInput
+              value={it.value}
+              onChange={(e) => patch(i, { value: e.target.value })}
+              placeholder={valuePlaceholder}
+              wrapperClassName={it.enabled ? '' : 'opacity-50'}
+            />
+          ) : (
+            <input
+              value={it.value}
+              onChange={(e) => patch(i, { value: e.target.value })}
+              placeholder={valuePlaceholder}
+              spellCheck={false}
+              className={`${inputCls} flex-1 ${it.enabled ? '' : 'opacity-50'}`}
+            />
+          )}
           <button
             type="button"
             title="Remove"

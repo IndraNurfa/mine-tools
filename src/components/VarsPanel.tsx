@@ -1,7 +1,8 @@
 import React from 'react';
-import { inputCls } from './ui.tsx';
+import { SecretInput, inputCls } from './ui.tsx';
+import { isSensitiveName } from '../core/http/redact.ts';
 
-/** Inputs for {{placeholders}} found in a request. Values are remembered by name. */
+/** Inputs for {{placeholders}} found in a request. Values are matched by name. */
 export const VarsPanel: React.FC<{
   names: string[];
   values: Record<string, string>;
@@ -11,7 +12,7 @@ export const VarsPanel: React.FC<{
     return (
       <p className="text-xs text-mute leading-relaxed">
         Use <code className="font-mono text-primary-soft">{'{{name}}'}</code> in the URL, headers, auth or body, and a field to fill it in appears here.
-        Values are remembered by name.
+        Values are kept by name until you close the page; tick “Remember secrets” to save them.
       </p>
     );
   return (
@@ -19,13 +20,17 @@ export const VarsPanel: React.FC<{
       {names.map((n) => (
         <label key={n} className="flex items-center gap-3 text-xs">
           <span className="w-32 shrink-0 font-mono text-primary-soft truncate" title={n}>{`{{${n}}}`}</span>
-          <input
-            value={values[n] ?? ''}
-            onChange={(e) => onChange({ ...values, [n]: e.target.value })}
-            spellCheck={false}
-            placeholder="value"
-            className={`${inputCls} flex-1`}
-          />
+          {isSensitiveName(n) ? (
+            <SecretInput value={values[n] ?? ''} onChange={(e) => onChange({ ...values, [n]: e.target.value })} placeholder="value" />
+          ) : (
+            <input
+              value={values[n] ?? ''}
+              onChange={(e) => onChange({ ...values, [n]: e.target.value })}
+              spellCheck={false}
+              placeholder="value"
+              className={`${inputCls} flex-1`}
+            />
+          )}
         </label>
       ))}
     </div>

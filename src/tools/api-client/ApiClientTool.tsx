@@ -8,8 +8,10 @@ import { CODE_TARGETS, generateCode, parseCurl, type CodeTarget } from '../../co
 import { KvEditor } from '../../components/KvEditor.tsx';
 import { ResponseView } from '../../components/ResponseView.tsx';
 import { VarsPanel } from '../../components/VarsPanel.tsx';
-import { PaneHeader, Segmented, TextBtn, inputCls, textareaCls, useCopy } from '../../components/ui.tsx';
+import { PaneHeader, SecretInput, Segmented, TextBtn, inputCls, textareaCls, useCopy } from '../../components/ui.tsx';
 import { usePersistentState } from '../../lib/storage.ts';
+import { isApiRequest, isStringRecord } from '../../core/http/validate.ts';
+import { RememberSecrets } from '../../components/RememberSecrets.tsx';
 
 interface HistoryItem {
   id: string;
@@ -17,15 +19,18 @@ interface HistoryItem {
   status: number;
   req: ApiRequest;
 }
+const isHistory = (items: HistoryItem[]) =>
+  items.every((h) => typeof h?.id === 'string' && typeof h.at === 'number' && typeof h.status === 'number' && isApiRequest(h.req));
+
 type Tab = 'params' | 'headers' | 'auth' | 'body' | 'vars' | 'history' | 'curl';
 
 const HEADER_NAMES = ['Accept', 'Authorization', 'Content-Type', 'Cache-Control', 'User-Agent', 'X-Requested-With', 'Origin', 'Referer', 'Cookie', 'If-None-Match'];
 const METHOD_TONE: Record<string, string> = { GET: 'text-primary', POST: 'text-yellow-400', PUT: 'text-blue-400', PATCH: 'text-purple-400', DELETE: 'text-red-400' };
 
 export const ApiClientTool: React.FC = () => {
-  const [req, setReq] = usePersistentState<ApiRequest>('api-client', 'request', emptyRequest);
-  const [vars, setVars] = usePersistentState<Record<string, string>>('api-client', 'vars', {});
-  const [history, setHistory] = usePersistentState<HistoryItem[]>('api-client', 'history', []);
+  const [req, setReq] = usePersistentState<ApiRequest>('api-client', 'request', emptyRequest, isApiRequest);
+  const [vars, setVars] = usePersistentState<Record<string, string>>('api-client', 'vars', {}, isStringRecord);
+  const [history, setHistory] = usePersistentState<HistoryItem[]>('api-client', 'history', [], isHistory);
   const [tab, setTab] = usePersistentState<Tab>('api-client', 'tab', 'params');
   const [target, setTarget] = usePersistentState<CodeTarget>('api-client', 'target', 'curl');
   const [res, setRes] = useState<ApiResponse | null>(null);
@@ -125,10 +130,10 @@ export const ApiClientTool: React.FC = () => {
         )}
       </div>
 
-      <div className="flex-1 min-h-0 grid grid-rows-2 xl:grid-rows-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-hairline">
+      <div className="flex-1 min-h-0 grid grid-cols-1 grid-rows-2 xl:grid-rows-1 xl:grid-cols-2 divide-y xl:divide-y-0 xl:divide-x divide-hairline">
         {/* Request editor */}
-        <div className="flex flex-col min-h-0">
-          <div className="shrink-0 flex items-center border-b border-hairline px-2 overflow-x-auto">
+        <div className="flex flex-col min-h-0 min-w-0">
+          <div className="shrink-0 flex flex-wrap items-center border-b border-hairline px-2">
             {tabBtn('params', 'Params', params.length)}
             {tabBtn('headers', 'Headers', enabledHeaders)}
             {tabBtn('auth', 'Auth')}
@@ -136,6 +141,9 @@ export const ApiClientTool: React.FC = () => {
             {tabBtn('vars', 'Variables', names.length)}
             {tabBtn('curl', 'cURL')}
             {tabBtn('history', 'History', history.length)}
+            <span className="ml-auto pl-3 pr-1 py-2 shrink-0">
+              <RememberSecrets />
+            </span>
           </div>
           <div className="flex-1 min-h-0 overflow-auto p-4">
             {tab === 'params' && (
@@ -161,12 +169,14 @@ export const ApiClientTool: React.FC = () => {
                   onChange={(type) => patch({ auth: { ...req.auth, type } })}
                 />
                 {req.auth.type === 'bearer' && (
-                  <input value={req.auth.token} onChange={(e) => patch({ auth: { ...req.auth, token: e.target.value } })} placeholder="token" spellCheck={false} className={`${inputCls} w-full py-2.5`} />
+                  <div className="flex">
+                    <SecretInput value={req.auth.token} onChange={(e) => patch({ auth: { ...req.auth, token: e.target.value } })} placeholder="token" className="py-2.5" />
+                  </div>
                 )}
                 {req.auth.type === 'basic' && (
                   <div className="flex gap-2">
                     <input value={req.auth.username} onChange={(e) => patch({ auth: { ...req.auth, username: e.target.value } })} placeholder="username" className={`${inputCls} flex-1`} />
-                    <input value={req.auth.password} onChange={(e) => patch({ auth: { ...req.auth, password: e.target.value } })} placeholder="password" className={`${inputCls} flex-1`} />
+                    <SecretInput value={req.auth.password} onChange={(e) => patch({ auth: { ...req.auth, password: e.target.value } })} placeholder="password" />
                   </div>
                 )}
                 <p className="text-xs text-mute">Adds an Authorization header unless you set one yourself under Headers.</p>

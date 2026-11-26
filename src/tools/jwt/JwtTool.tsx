@@ -1,11 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { usePersistentState } from '../../lib/storage.ts';
-import { decodeJwt, expiryState } from '../../core/jwt/jwt.ts';
+import { decodeJwt, expiryState, SAMPLE_JWT } from '../../core/jwt/jwt.ts';
+import { RememberSecrets } from '../../components/RememberSecrets.tsx';
 import { formatTimestamp } from '../../core/time/timestamp.ts';
 import { PaneHeader, textareaCls, usePaste } from '../../components/ui.tsx';
-
-const SAMPLE =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNzAwMDAwMDAwLCJleHAiOjIwMDAwMDAwMDB9.signature';
 
 const BADGE = {
   valid: ['Not expired', 'text-primary border-primary/40 bg-primary/10'],
@@ -17,7 +15,7 @@ const BADGE = {
 const TIME_CLAIMS = ['exp', 'iat', 'nbf', 'auth_time'];
 
 export const JwtTool: React.FC = () => {
-  const [input, setInput] = usePersistentState('jwt', 'input', SAMPLE);
+  const [input, setInput] = usePersistentState('jwt', 'input', SAMPLE_JWT);
   const paste = usePaste(setInput);
 
   const result = useMemo(() => {
@@ -42,9 +40,12 @@ export const JwtTool: React.FC = () => {
           onPaste={paste}
           onClear={() => setInput('')}
           extra={
-            result && 'error' in result ? (
-              <span className="text-xs text-red-400 mr-2">{result.error}</span>
-            ) : undefined
+            <>
+              {result && 'error' in result && <span className="text-xs text-red-400 mr-2">{result.error}</span>}
+              <span className="mr-2">
+                <RememberSecrets />
+              </span>
+            </>
           }
         />
         <textarea

@@ -184,7 +184,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
       <div className="flex-1 flex min-h-0 divide-x divide-hairline">
         {/* Left Pane: Input */}
         <div className="w-1/2 flex flex-col min-w-0 bg-canvas">
-          <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
+          <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-ink uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                 <FileCode className="w-3.5 h-3.5 text-primary" />
@@ -195,7 +195,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 onClick={handleLoadSample}
                 className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
@@ -235,7 +235,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
 
         {/* Right Pane: Output Preview with [Text | Tree] Toggle */}
         <div className="w-1/2 flex flex-col min-w-0 bg-canvas">
-          <div className="h-10 border-b border-hairline bg-canvas-soft px-3 flex items-center justify-between gap-2 text-xs shrink-0">
+          <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
             {/* View Switcher: Text | Tree */}
             <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
               <button
@@ -266,7 +266,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
 
             {/* Controls specific to Text View */}
             {outputView === 'text' ? (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Indent selector */}
                 <select
                   value={indent}
@@ -359,7 +359,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
                   />
                 </div>
                 {/* Size stats footer */}
-                <div className="h-8 border-t border-hairline bg-canvas-soft px-3 flex items-center justify-between text-[11px] text-mute font-mono shrink-0">
+                <div className="min-h-8 py-1 border-t border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-x-3 text-[11px] text-mute font-mono shrink-0">
                   <div className="flex items-center gap-2">
                     <span>In: {sizeMetrics.inputFormatted}</span>
                     <ArrowRight className="w-3 h-3 text-hairline-soft" />
@@ -374,7 +374,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
                       </span>
                     )}
                   </div>
-                  <span className="text-ink">Strict JSON</span>
+                  <span className="text-ink whitespace-nowrap">Strict JSON</span>
                 </div>
               </>
             ) : ast ? (

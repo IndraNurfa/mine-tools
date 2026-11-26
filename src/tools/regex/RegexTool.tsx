@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { usePersistentState } from '../../lib/storage.ts';
-import { runRegex, runReplace } from '../../core/regex/regexTest.ts';
+import { useRegex } from './useRegex.ts';
 import { Check, PaneHeader, Toolbar, inputCls, textareaCls, usePaste } from '../../components/ui.tsx';
 
 const FLAGS = [
@@ -18,11 +18,7 @@ export const RegexTool: React.FC = () => {
   const [replacement, setReplacement] = usePersistentState('regex', 'replacement', '');
   const paste = usePaste(setText);
 
-  const result = useMemo(() => runRegex(pattern, flags, text), [pattern, flags, text]);
-  const replaced = useMemo(
-    () => (replacement ? runReplace(pattern, flags, text, replacement) : ''),
-    [pattern, flags, text, replacement],
-  );
+  const { result, resultText, pending } = useRegex({ pattern, flags, text, replacement });
 
   const toggle = (f: string, on: boolean) =>
     setFlags((cur) => (on ? cur + f : cur.replace(f, '')));
@@ -33,13 +29,13 @@ export const RegexTool: React.FC = () => {
     let pos = 0;
     for (const m of result.matches) {
       if (m.end === m.index) continue;
-      if (m.index > pos) out.push({ t: text.slice(pos, m.index), hit: false });
-      out.push({ t: text.slice(m.index, m.end), hit: true });
+      if (m.index > pos) out.push({ t: resultText.slice(pos, m.index), hit: false });
+      out.push({ t: resultText.slice(m.index, m.end), hit: true });
       pos = m.end;
     }
-    if (pos < text.length) out.push({ t: text.slice(pos), hit: false });
+    if (pos < resultText.length) out.push({ t: resultText.slice(pos), hit: false });
     return out;
-  }, [result, text]);
+  }, [result, resultText]);
 
   return (
     <div className="h-full flex flex-col min-h-0 bg-canvas">
@@ -76,7 +72,7 @@ export const RegexTool: React.FC = () => {
         </div>
         <div className="flex flex-col min-h-0">
           <PaneHeader
-            title={`Matches · ${result.matches.length}${result.truncated ? '+' : ''}`}
+            title={pending ? 'Matches · running…' : `Matches · ${result.matches.length}${result.truncated ? '+' : ''}`}
           />
           <div className="flex-1 min-h-0 overflow-auto p-4 space-y-4">
             <pre className="font-mono text-sm text-body whitespace-pre-wrap break-words">
@@ -124,7 +120,7 @@ export const RegexTool: React.FC = () => {
                 className={`${inputCls} w-full`}
               />
               {replacement && (
-                <pre className="font-mono text-sm text-ink whitespace-pre-wrap break-words">{replaced}</pre>
+                <pre className="font-mono text-sm text-ink whitespace-pre-wrap break-words">{result.replaced}</pre>
               )}
             </div>
           </div>
