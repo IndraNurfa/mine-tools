@@ -72,7 +72,7 @@ export const Editor: React.FC<EditorProps> = ({
           readOnly,
           minimap: { enabled: false },
           fontSize: 13,
-          fontFamily: "'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+          fontFamily: "'SF Mono', 'JetBrains Mono Variable', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
           lineNumbers: 'on',
           scrollBeyondLastLine: false,
           automaticLayout: true,

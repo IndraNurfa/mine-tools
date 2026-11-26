@@ -20,6 +20,12 @@ loader
   .then((monaco) => {
     // Loose JSON is valid input here and core/parse reports real errors, so
     // Monaco's strict JSON diagnostics would only add false error marks.
+    // Monaco caches glyph widths; measure again once the bundled font has loaded.
+    document.fonts
+      .load("13px 'JetBrains Mono Variable'")
+      .then(() => monaco.editor.remeasureFonts())
+      .catch(() => {});
+
     monaco.json.jsonDefaults.setDiagnosticsOptions({ validate: false });
 
     monaco.editor.defineTheme(THEME, {

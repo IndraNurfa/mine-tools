@@ -14,7 +14,7 @@ export const CaseTool: React.FC = () => {
     <div className="h-full flex flex-col min-h-0 bg-canvas">
       <div className="h-[22%] min-h-[110px] max-h-[220px] flex flex-col border-b border-hairline">
         <PaneHeader title="Text · one identifier per line works too" onPaste={paste} onClear={() => setInput('')} />
-        <textarea
+        <textarea aria-label="Text to convert"
           autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -37,9 +37,9 @@ export const CaseTool: React.FC = () => {
                 <div className="flex items-center justify-between gap-2">
                   {/* Show the style name in its own casing (camelCase, snake_case…) */}
                   <span className="text-xs font-medium text-primary-soft">{s.label}</span>
-                  <Copy className="w-3.5 h-3.5 text-mute opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Copy className="w-3.5 h-3.5 text-mute [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 transition-opacity" />
                 </div>
-                <div className="mt-2 font-mono text-[15px] leading-snug text-ink-strong whitespace-pre-wrap break-all">
+                <div className="mt-2 font-mono text-sm leading-snug text-ink-strong whitespace-pre-wrap break-all">
                   {out || <span className="text-mute">—</span>}
                 </div>
               </button>

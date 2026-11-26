@@ -89,10 +89,10 @@ export const ListFormatterTool: React.FC = () => {
       <div className="shrink-0 border-b border-hairline px-4 py-3 space-y-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[11px] font-semibold">
+            <span className="text-mute uppercase tracking-[1.5px] text-[11px] font-semibold">
               Separator
             </span>
-            <select
+            <select aria-label="Separator"
               value={useCustomSep ? '__custom' : separatorId}
               onChange={(e) => {
                 if (e.target.value === '__custom') {
@@ -112,7 +112,7 @@ export const ListFormatterTool: React.FC = () => {
               <option value="__custom">Custom…</option>
             </select>
             {useCustomSep && (
-              <input
+              <input aria-label="Custom separator"
                 type="text"
                 value={customSep}
                 onChange={(e) => setCustomSep(e.target.value)}
@@ -123,7 +123,7 @@ export const ListFormatterTool: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[11px] font-semibold">
+            <span className="text-mute uppercase tracking-[1.5px] text-[11px] font-semibold">
               Quote
             </span>
             <div className="flex rounded-sm border border-hairline overflow-hidden">
@@ -145,7 +145,7 @@ export const ListFormatterTool: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-mute uppercase tracking-wider text-[11px] font-semibold">
+            <span className="text-mute uppercase tracking-[1.5px] text-[11px] font-semibold">
               Wrapper
             </span>
             <div className="flex rounded-sm border border-hairline overflow-hidden">
@@ -230,7 +230,7 @@ export const ListFormatterTool: React.FC = () => {
               </button>
             </div>
           </div>
-          <textarea
+          <textarea aria-label="Input lines"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Paste a column from a sheet, or one item per line…"

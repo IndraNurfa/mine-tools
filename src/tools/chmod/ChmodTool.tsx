@@ -25,7 +25,7 @@ export const ChmodTool: React.FC = () => {
             value={octal}
             onChange={(e) => setOctal(e.target.value)}
             maxLength={4}
-            className={`${inputCls} w-20 text-base py-2 text-center ${valid ? '' : 'border-red-400'}`}
+            className={`${inputCls} w-20 text-sm py-2 text-center ${valid ? '' : 'border-red-400'}`}
           />
         </label>
         <label className="flex items-center gap-2 text-xs text-body">
@@ -36,7 +36,7 @@ export const ChmodTool: React.FC = () => {
               const p = symbolicToPerms(e.target.value);
               if (p) setOctal(permsToOctal(p));
             }}
-            className={`${inputCls} w-32 text-base py-2 text-center`}
+            className={`${inputCls} w-32 text-sm py-2 text-center`}
           />
         </label>
       </Toolbar>
@@ -58,7 +58,9 @@ export const ChmodTool: React.FC = () => {
                     <td className="p-4 capitalize text-body">{w}</td>
                     {BITS.map((b) => (
                       <td key={b} className="p-4 text-center">
-                        <input type="checkbox" checked={perms[w][b]} onChange={() => toggle(w, b)} className="accent-primary w-5 h-5 cursor-pointer" />
+                        <label className="inline-flex items-center justify-center min-w-10">
+                          <input aria-label={`${w} ${b}`} type="checkbox" checked={perms[w][b]} onChange={() => toggle(w, b)} className="accent-primary w-5 h-5 cursor-pointer" />
+                        </label>
                       </td>
                     ))}
                   </tr>

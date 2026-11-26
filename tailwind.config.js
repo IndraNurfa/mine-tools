@@ -4,6 +4,8 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Hover styles only where a pointer can hover, so taps never leave them stuck.
+  future: { hoverOnlyWhenSupported: true },
   theme: {
     extend: {
       colors: {
@@ -13,12 +15,10 @@ export default {
         },
         hairline: {
           DEFAULT: '#3d3a39',
-          soft: '#b8b3b0',
         },
         primary: {
           DEFAULT: '#00d992',
           soft: '#2fd6a1',
-          deep: '#10b981',
         },
         ink: {
           DEFAULT: '#f2f2f2',
@@ -26,11 +26,10 @@ export default {
         },
         body: '#d0d0d0',
         mute: '#9ca3af',
-        'canvas-text-soft': '#f5f6f7',
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        mono: ['SF Mono', 'SFMono-Regular', 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'monospace'],
+        sans: ['Inter Variable', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['SF Mono', 'SFMono-Regular', 'JetBrains Mono Variable', 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'monospace'],
       },
       borderRadius: {
         xs: '4px',

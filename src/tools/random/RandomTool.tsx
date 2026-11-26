@@ -53,8 +53,9 @@ export const RandomTool: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind, length, lower, upper, digits, symbols, noAmbiguous, n, min, max, bytes, items, nonce]);
 
-  const num = (v: number, set: (n: number) => void, w = 'w-20') => (
+  const num = (label: string, v: number, set: (n: number) => void, w = 'w-20') => (
     <input
+      aria-label={label}
       type="number"
       value={v}
       onChange={(e) => set(parseInt(e.target.value, 10) || 0)}
@@ -77,7 +78,7 @@ export const RandomTool: React.FC = () => {
         />
         {kind === 'password' && (
           <>
-            <label className="flex items-center gap-2 text-xs text-body">Length {num(length, setLength)}</label>
+            <label className="flex items-center gap-2 text-xs text-body">Length {num('Length', length, setLength)}</label>
             <Check checked={lower} onChange={setLower}>a-z</Check>
             <Check checked={upper} onChange={setUpper}>A-Z</Check>
             <Check checked={digits} onChange={setDigits}>0-9</Check>
@@ -86,13 +87,13 @@ export const RandomTool: React.FC = () => {
           </>
         )}
         {(kind === 'password' || kind === 'number') && (
-          <label className="flex items-center gap-2 text-xs text-body">Count {num(count, setCount, 'w-16')}</label>
+          <label className="flex items-center gap-2 text-xs text-body">Count {num('How many', count, setCount, 'w-16')}</label>
         )}
-        {kind === 'token' && <label className="flex items-center gap-2 text-xs text-body">Bytes {num(bytes, setBytes)}</label>}
+        {kind === 'token' && <label className="flex items-center gap-2 text-xs text-body">Bytes {num('Bytes', bytes, setBytes)}</label>}
         {kind === 'number' && (
           <>
-            <label className="flex items-center gap-2 text-xs text-body">Min {num(min, setMin)}</label>
-            <label className="flex items-center gap-2 text-xs text-body">Max {num(max, setMax)}</label>
+            <label className="flex items-center gap-2 text-xs text-body">Min {num('Minimum', min, setMin)}</label>
+            <label className="flex items-center gap-2 text-xs text-body">Max {num('Maximum', max, setMax)}</label>
           </>
         )}
         <TextBtn primary onClick={regen}>
@@ -104,7 +105,7 @@ export const RandomTool: React.FC = () => {
       </Toolbar>
       <Page className="space-y-4">
         {kind === 'pick' && (
-          <textarea
+          <textarea aria-label="Options, one per line"
             value={items}
             onChange={(e) => setItems(e.target.value)}
             rows={5}
@@ -121,7 +122,7 @@ export const RandomTool: React.FC = () => {
                 key={i}
                 type="button"
                 onClick={() => copy(s.replace(/^(hex|base64url)\s+/, ''), 'Copied')}
-                className="text-left px-4 py-3.5 rounded-md border border-hairline bg-canvas-soft hover:border-primary/40 font-mono text-[15px] text-ink break-all transition-colors"
+                className="text-left px-4 py-3.5 rounded-md border border-hairline bg-canvas-soft hover:border-primary/40 font-mono text-sm text-ink break-all transition-colors"
               >
                 {kind === 'pick' && i === 0 ? <span className="text-primary">★ </span> : null}
                 {s}

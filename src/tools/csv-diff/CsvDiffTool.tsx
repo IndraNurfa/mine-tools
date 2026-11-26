@@ -9,13 +9,13 @@ const B = 'id,name,city,email\n1,Ann,Jakarta,ann@x.com\n2,Bobby,Bandung,\n4,Di,M
 const TONE: Record<RowDiffType, string> = {
   added: 'bg-primary/10',
   removed: 'bg-red-400/10',
-  changed: 'bg-yellow-400/5',
+  changed: 'bg-amber-400/5',
   same: '',
 };
 const BADGE: Record<RowDiffType, string> = {
   added: 'text-primary',
   removed: 'text-red-400',
-  changed: 'text-yellow-400',
+  changed: 'text-amber-400',
   same: 'text-mute',
 };
 
@@ -80,7 +80,7 @@ export const CsvDiffTool: React.FC = () => {
             onClear={() => { setLeft(''); setFileL(null); }}
             extra={<FileButton label="Upload A" onFile={(t, f) => { setLeft(t); setFileL(f); }} />}
           />
-          <textarea value={left} onChange={(e) => setLeft(e.target.value)} spellCheck={false} placeholder="Paste CSV, upload, or drop a file…" className={textareaCls} />
+          <textarea aria-label="Original CSV" value={left} onChange={(e) => setLeft(e.target.value)} spellCheck={false} placeholder="Paste CSV, upload, or drop a file…" className={textareaCls} />
         </DropZone>
         <DropZone className="flex flex-col min-h-0" hint="Drop file as B" onFile={(t, f) => { setRight(t); setFileR(f); }}>
           <PaneHeader
@@ -89,7 +89,7 @@ export const CsvDiffTool: React.FC = () => {
             onClear={() => { setRight(''); setFileR(null); }}
             extra={<FileButton label="Upload B" onFile={(t, f) => { setRight(t); setFileR(f); }} />}
           />
-          <textarea value={right} onChange={(e) => setRight(e.target.value)} spellCheck={false} placeholder="Paste CSV, upload, or drop a file…" className={textareaCls} />
+          <textarea aria-label="Modified CSV" value={right} onChange={(e) => setRight(e.target.value)} spellCheck={false} placeholder="Paste CSV, upload, or drop a file…" className={textareaCls} />
         </DropZone>
       </div>
 
@@ -117,7 +117,7 @@ export const CsvDiffTool: React.FC = () => {
             <tbody>
               {rows.slice(0, 2000).map((r, i) => (
                 <tr key={i} className={TONE[r.type]}>
-                  <td className={`border-b border-r border-hairline/60 px-2 py-1 text-center font-bold ${BADGE[r.type]}`}>
+                  <td className={`border-b border-r border-hairline/60 px-2 py-1 text-center font-semibold ${BADGE[r.type]}`}>
                     {{ added: '+', removed: '−', changed: '~', same: '' }[r.type]}
                   </td>
                   <td className="border-b border-r border-hairline/60 px-3 py-1 text-ink">{r.key}</td>

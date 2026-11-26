@@ -42,7 +42,7 @@ export const RegexTool: React.FC = () => {
       <Toolbar>
         <div className="flex items-center gap-1 flex-1 min-w-[280px]">
           <span className="font-mono text-mute">/</span>
-          <input
+          <input aria-label="Pattern"
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
             spellCheck={false}
@@ -63,7 +63,7 @@ export const RegexTool: React.FC = () => {
       <div className="flex-1 min-h-0 grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-hairline">
         <div className="flex flex-col min-h-0">
           <PaneHeader title="Test string" onPaste={paste} onClear={() => setText('')} />
-          <textarea
+          <textarea aria-label="Test string"
             value={text}
             onChange={(e) => setText(e.target.value)}
             spellCheck={false}
@@ -113,7 +113,7 @@ export const RegexTool: React.FC = () => {
               ))}
             </div>
             <div className="pt-2 border-t border-hairline space-y-2">
-              <input
+              <input aria-label="Replacement"
                 value={replacement}
                 onChange={(e) => setReplacement(e.target.value)}
                 placeholder="Replacement ($1, $<name>, $&)…"

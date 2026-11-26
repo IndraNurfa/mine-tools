@@ -26,14 +26,16 @@ export const KvEditor: React.FC<{
       {items.length === 0 && empty && <p className="text-sm text-mute pb-1">{empty}</p>}
       {items.map((it, i) => (
         <div key={i} className="flex items-center gap-2">
-          <input
+          <label className="inline-flex items-center justify-center">
+          <input aria-label={`Enable row ${i + 1}`}
             type="checkbox"
             checked={it.enabled}
             onChange={(e) => patch(i, { enabled: e.target.checked })}
             className="accent-primary"
             title="Enabled"
           />
-          <input
+          </label>
+          <input aria-label={`${keyPlaceholder} ${i + 1}`}
             value={it.key}
             list={suggestions ? listId : undefined}
             onChange={(e) => patch(i, { key: e.target.value })}
@@ -49,7 +51,7 @@ export const KvEditor: React.FC<{
               wrapperClassName={it.enabled ? '' : 'opacity-50'}
             />
           ) : (
-            <input
+            <input aria-label={`${it.key || valuePlaceholder} value`}
               value={it.value}
               onChange={(e) => patch(i, { value: e.target.value })}
               placeholder={valuePlaceholder}
@@ -60,6 +62,7 @@ export const KvEditor: React.FC<{
           <button
             type="button"
             title="Remove"
+            aria-label="Remove"
             onClick={() => onChange(items.filter((_, j) => j !== i))}
             className="p-1.5 text-mute hover:text-red-400"
           >

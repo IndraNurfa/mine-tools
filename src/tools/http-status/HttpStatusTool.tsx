@@ -7,7 +7,7 @@ const CLASSES = [
   { c: '1', label: '1xx Informational', tone: 'text-mute' },
   { c: '2', label: '2xx Success', tone: 'text-primary' },
   { c: '3', label: '3xx Redirection', tone: 'text-blue-400' },
-  { c: '4', label: '4xx Client error', tone: 'text-yellow-400' },
+  { c: '4', label: '4xx Client error', tone: 'text-amber-400' },
   { c: '5', label: '5xx Server error', tone: 'text-red-400' },
 ];
 
@@ -19,7 +19,7 @@ export const HttpStatusTool: React.FC = () => {
   return (
     <div className="h-full flex flex-col min-h-0 bg-canvas">
       <Toolbar>
-        <input
+        <input aria-label="Search status codes"
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}

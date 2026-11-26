@@ -23,13 +23,13 @@ export const TimestampTool: React.FC = () => {
     <div className="h-full flex flex-col min-h-0 bg-canvas">
       <Toolbar>
         <div className="flex items-center gap-2 flex-1 min-w-[260px]">
-          <input
+          <input aria-label="Timestamp or date"
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
             spellCheck={false}
             placeholder="Unix seconds / ms / µs / ns, ISO 8601, or any date string"
-            className={`${inputCls} flex-1 text-base py-2.5`}
+            className={`${inputCls} flex-1 text-sm py-2.5`}
           />
           <TextBtn primary onClick={() => setInput(String(Math.floor(Date.now() / 1000)))}>
             <Clock className="w-3.5 h-3.5" />

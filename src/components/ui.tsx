@@ -40,8 +40,9 @@ export const IconBtn: React.FC<{
   <button
     type="button"
     title={title}
+    aria-label={title}
     onClick={onClick}
-    className="p-1.5 rounded-sm text-mute hover:text-ink hover:bg-canvas-soft transition-colors"
+    className="inline-flex items-center justify-center min-h-7 min-w-7 rounded-sm text-mute hover:text-ink hover:bg-canvas-soft transition-colors"
   >
     {children}
   </button>
@@ -58,7 +59,7 @@ export const PaneHeader: React.FC<{
 }> = ({ title, icon, onPaste, onClear, copyText, extra }) => {
   const copy = useCopy();
   return (
-    <div className="h-10 px-3 flex items-center justify-between border-b border-hairline shrink-0">
+    <div className="min-h-10 px-3 flex items-center justify-between border-b border-hairline shrink-0">
       <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute flex items-center gap-1.5">
         {icon}
         {title}
@@ -92,19 +93,21 @@ export function Segmented<T extends string>({
   mono = false,
 }: {
   value: T;
-  options: { id: T; label: string }[];
+  options: { id: T; label: React.ReactNode; title?: string }[];
   onChange: (v: T) => void;
   mono?: boolean;
 }) {
   return (
-    <div className="flex rounded-sm border border-hairline overflow-hidden">
+    <div className="inline-flex flex-wrap max-w-full rounded-sm border border-hairline bg-canvas p-0.5">
       {options.map((o) => (
         <button
           key={o.id}
           type="button"
+          title={o.title}
+          aria-pressed={value === o.id}
           onClick={() => onChange(o.id)}
-          className={`px-3 py-1.5 text-xs transition-colors ${mono ? 'font-mono' : ''} ${
-            value === o.id ? 'bg-primary/15 text-primary' : 'bg-canvas-soft text-mute hover:text-ink'
+          className={`inline-flex items-center justify-center gap-1.5 min-h-6 px-2.5 rounded-xs text-xs whitespace-nowrap transition-colors ${mono ? 'font-mono' : ''} ${
+            value === o.id ? 'bg-primary/15 text-primary' : 'text-mute hover:text-ink'
           }`}
         >
           {o.label}
@@ -136,19 +139,22 @@ export const Toolbar: React.FC<{ children: React.ReactNode }> = ({ children }) =
   </div>
 );
 
-export const TextBtn: React.FC<{
-  onClick: () => void;
-  children: React.ReactNode;
-  primary?: boolean;
-}> = ({ onClick, children, primary }) => (
+const BUTTON_VARIANT = {
+  primary: 'border-primary bg-primary text-canvas font-semibold hover:bg-primary-soft hover:border-primary-soft',
+  secondary: 'border-hairline bg-canvas-soft text-mute hover:text-ink hover:border-primary/40',
+  danger: 'border-hairline bg-canvas-soft text-mute hover:text-red-400 hover:border-red-400/40',
+};
+
+/** The app's button. Use `primary` for at most one action per view. */
+export const TextBtn: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { primary?: boolean; danger?: boolean }
+> = ({ primary, danger, className = '', children, ...props }) => (
   <button
     type="button"
-    onClick={onClick}
-    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border text-xs transition-colors ${
-      primary
-        ? 'border-primary/40 bg-primary/10 text-primary hover:bg-primary/20'
-        : 'border-hairline bg-canvas-soft text-mute hover:text-ink hover:border-primary/40'
-    }`}
+    {...props}
+    className={`inline-flex items-center justify-center gap-1.5 min-h-7 px-2.5 rounded-sm border text-xs whitespace-nowrap transition-colors ${
+      BUTTON_VARIANT[primary ? 'primary' : danger ? 'danger' : 'secondary']
+    } ${className}`}
   >
     {children}
   </button>
@@ -167,6 +173,7 @@ export const SecretInput: React.FC<
   return (
     <span className={`flex-1 min-w-0 flex items-center gap-1 ${wrapperClassName}`}>
       <input
+        aria-label={props.placeholder}
         {...props}
         type={show ? 'text' : 'password'}
         autoComplete="off"
@@ -199,11 +206,11 @@ export const CopyRow: React.FC<{ label: string; value: string; dim?: boolean }> 
         {label}
       </span>
       <span
-        className={`flex-1 min-w-0 break-all font-mono text-[13px] leading-snug ${dim ? 'text-mute' : 'text-ink'}`}
+        className={`flex-1 min-w-0 break-all font-mono text-sm leading-snug ${dim ? 'text-mute' : 'text-ink'}`}
       >
         {value || '—'}
       </span>
-      <Copy className="w-3.5 h-3.5 text-mute opacity-0 group-hover:opacity-100 shrink-0" />
+      <Copy className="w-3.5 h-3.5 text-mute [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 shrink-0" />
     </button>
   );
 };
@@ -225,7 +232,7 @@ export const Panel: React.FC<{
 }> = ({ title, extra, children, className = '', bodyClassName = 'p-4' }) => (
   <section className={`rounded-md border border-hairline bg-canvas-soft/40 min-w-0 ${className}`}>
     {title !== undefined && (
-      <header className="px-4 h-10 flex items-center justify-between gap-3 border-b border-hairline">
+      <header className="px-4 min-h-10 flex items-center justify-between gap-3 border-b border-hairline">
         <Label>{title}</Label>
         {extra}
       </header>

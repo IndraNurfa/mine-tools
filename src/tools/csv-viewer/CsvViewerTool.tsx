@@ -62,7 +62,7 @@ export const CsvViewerTool: React.FC = () => {
         <TextBtn onClick={() => setFlip(!flip)}>
           <Repeat className="w-3.5 h-3.5" /> {flip ? 'Un-transpose' : 'Transpose'}
         </TextBtn>
-        <input
+        <input aria-label="Filter rows"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter rows…"
@@ -86,7 +86,7 @@ export const CsvViewerTool: React.FC = () => {
                 setFile(null);
               }}
             />
-            <textarea
+            <textarea aria-label="CSV input"
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
@@ -110,13 +110,17 @@ export const CsvViewerTool: React.FC = () => {
                   {base.header.map((h, i) => (
                     <th
                       key={i}
-                      onClick={() => clickHeader(i)}
-                      className="bg-canvas-soft border-b border-r border-hairline px-3 py-1.5 text-left font-semibold text-ink cursor-pointer select-none hover:text-primary whitespace-nowrap"
+                      aria-sort={sort?.col === i ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+                      className="bg-canvas-soft border-b border-r border-hairline p-0 text-left font-semibold text-ink whitespace-nowrap"
                     >
-                      <span className="inline-flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => clickHeader(i)}
+                        className="w-full inline-flex items-center gap-1 px-3 py-1.5 font-semibold select-none hover:text-primary"
+                      >
                         {h}
                         {sort?.col === i && (sort.dir === 'asc' ? <ArrowUp className="w-3 h-3 text-primary" /> : <ArrowDown className="w-3 h-3 text-primary" />)}
-                      </span>
+                      </button>
                     </th>
                   ))}
                 </tr>

@@ -22,6 +22,7 @@ import {
   FileCode,
   FolderTree,
 } from 'lucide-react';
+import { IconBtn, Segmented, TextBtn } from '../../components/ui.tsx';
 
 const SAMPLE_JSON = `{
   // Sample Loose JSON
@@ -186,7 +187,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
         <div className="w-1/2 flex flex-col min-w-0 bg-canvas">
           <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-ink uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <span className="font-semibold text-ink uppercase tracking-[1.5px] text-[11px] flex items-center gap-1.5">
                 <FileCode className="w-3.5 h-3.5 text-primary" />
                 Input
               </span>
@@ -196,30 +197,15 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                onClick={handleLoadSample}
-                className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
-                title="Load sample loose JSON"
-              >
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span>Sample</span>
-              </button>
-              <button
-                onClick={handlePasteInput}
-                className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
-                title="Paste from clipboard"
-              >
-                <ClipboardPaste className="w-3 h-3" />
-                <span>Paste</span>
-              </button>
-              <button
-                onClick={handleClear}
-                className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-red-400 text-xs transition-colors flex items-center gap-1"
-                title="Clear input"
-              >
-                <Trash2 className="w-3 h-3" />
-                <span>Clear</span>
-              </button>
+              <TextBtn onClick={handleLoadSample} title="Load sample loose JSON">
+                <Sparkles className="w-3 h-3 text-primary" /> Sample
+              </TextBtn>
+              <TextBtn onClick={handlePasteInput} title="Paste from clipboard">
+                <ClipboardPaste className="w-3 h-3" /> Paste
+              </TextBtn>
+              <TextBtn danger onClick={handleClear} title="Clear input">
+                <Trash2 className="w-3 h-3" /> Clear
+              </TextBtn>
             </div>
           </div>
 
@@ -237,38 +223,20 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
         <div className="w-1/2 flex flex-col min-w-0 bg-canvas">
           <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
             {/* View Switcher: Text | Tree */}
-            <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
-              <button
-                onClick={() => setOutputView('text')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xs transition-colors text-xs ${
-                  outputView === 'text'
-                    ? 'bg-primary text-canvas font-semibold'
-                    : 'text-mute hover:text-ink'
-                }`}
-                title="View formatted text"
-              >
-                <FileCode className="w-3.5 h-3.5" />
-                <span>Text</span>
-              </button>
-              <button
-                onClick={() => setOutputView('tree')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-xs transition-colors text-xs ${
-                  outputView === 'tree'
-                    ? 'bg-primary text-canvas font-semibold'
-                    : 'text-mute hover:text-ink'
-                }`}
-                title="View interactive tree hierarchy"
-              >
-                <FolderTree className="w-3.5 h-3.5" />
-                <span>Tree</span>
-              </button>
-            </div>
+            <Segmented
+              value={outputView}
+              onChange={setOutputView}
+              options={[
+                { id: 'text', title: 'View formatted text', label: <><FileCode className="w-3.5 h-3.5" /> Text</> },
+                { id: 'tree', title: 'View interactive tree hierarchy', label: <><FolderTree className="w-3.5 h-3.5" /> Tree</> },
+              ]}
+            />
 
             {/* Controls specific to Text View */}
             {outputView === 'text' ? (
               <div className="flex flex-wrap items-center gap-2">
                 {/* Indent selector */}
-                <select
+                <select aria-label="Indentation"
                   value={indent}
                   onChange={(e) => setIndent(e.target.value as IndentOption)}
                   className="bg-canvas border border-hairline text-ink rounded-sm px-2 py-1 text-xs focus:outline-none focus:border-primary font-mono cursor-pointer"
@@ -281,67 +249,40 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
                 </select>
 
                 {/* Sort keys toggle */}
-                <button
+                <TextBtn
                   onClick={() => setSortKeys(!sortKeys)}
-                  className={`px-2 py-1 rounded-sm border text-xs font-mono transition-colors ${
-                    sortKeys
-                      ? 'border-primary bg-primary/10 text-primary font-semibold'
-                      : 'border-hairline text-mute hover:text-ink bg-canvas'
-                  }`}
+                  aria-pressed={sortKeys}
+                  className={`font-mono ${sortKeys ? '!border-primary !bg-primary/15 !text-primary' : ''}`}
                   title="Sort object keys alphabetically"
                 >
                   A-Z
-                </button>
+                </TextBtn>
 
                 {/* Icon-only Expand All / Collapse All */}
                 <div className="flex items-center gap-1 border-l border-hairline pl-2">
-                  <button
-                    onClick={handleUnfoldAll}
-                    className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
-                    title="Expand all"
-                  >
+                  <IconBtn title="Expand all" onClick={handleUnfoldAll}>
                     <ChevronsUpDown className="w-3.5 h-3.5 text-primary" />
-                  </button>
-                  <button
-                    onClick={handleFoldAll}
-                    className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
-                    title="Collapse all"
-                  >
-                    <ChevronsDownUp className="w-3.5 h-3.5 text-mute" />
-                  </button>
+                  </IconBtn>
+                  <IconBtn title="Collapse all" onClick={handleFoldAll}>
+                    <ChevronsDownUp className="w-3.5 h-3.5" />
+                  </IconBtn>
                 </div>
 
                 {/* Smart Repair Trigger */}
-                <button
-                  onClick={handleSmartRepair}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-sm border border-hairline hover:border-primary text-ink hover:text-primary bg-canvas text-xs transition-colors"
-                  title="Smart format / Repair broken JSON"
-                >
-                  <Wrench className="w-3.5 h-3.5 text-primary" />
-                  <span>Smart format</span>
-                </button>
+                <TextBtn onClick={handleSmartRepair} title="Smart format / Repair broken JSON">
+                  <Wrench className="w-3.5 h-3.5 text-primary" /> Smart format
+                </TextBtn>
 
                 {/* Copy Output Button */}
-                <button
-                  onClick={handleCopyOutput}
-                  disabled={!formattedOutput}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-sm bg-primary hover:bg-primary-soft text-canvas font-semibold text-xs transition-colors disabled:opacity-40"
-                  title="Copy strict formatted JSON"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy</span>
-                </button>
+                <TextBtn primary onClick={handleCopyOutput} disabled={!formattedOutput} title="Copy strict formatted JSON">
+                  <Copy className="w-3.5 h-3.5" /> Copy
+                </TextBtn>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={handleSmartRepair}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-sm border border-hairline hover:border-primary text-ink hover:text-primary bg-canvas text-xs transition-colors"
-                  title="Smart format / Repair broken JSON"
-                >
-                  <Wrench className="w-3.5 h-3.5 text-primary" />
-                  <span>Smart format</span>
-                </button>
+                <TextBtn onClick={handleSmartRepair} title="Smart format / Repair broken JSON">
+                  <Wrench className="w-3.5 h-3.5 text-primary" /> Smart format
+                </TextBtn>
               </div>
             )}
           </div>
@@ -362,7 +303,7 @@ export const FormatterTool: React.FC<FormatterToolProps> = ({
                 <div className="min-h-8 py-1 border-t border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-x-3 text-[11px] text-mute font-mono shrink-0">
                   <div className="flex items-center gap-2">
                     <span>In: {sizeMetrics.inputFormatted}</span>
-                    <ArrowRight className="w-3 h-3 text-hairline-soft" />
+                    <ArrowRight className="w-3 h-3 text-mute" />
                     <span className="text-primary">Out: {sizeMetrics.outputFormatted}</span>
                     {sizeMetrics.inputBytes > 0 && (
                       <span className="text-mute">

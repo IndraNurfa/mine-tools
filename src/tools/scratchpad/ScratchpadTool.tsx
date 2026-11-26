@@ -34,20 +34,26 @@ export const ScratchpadTool: React.FC = () => {
         {notes.map((n) => (
           <div
             key={n.id}
-            className={`group flex items-center gap-1 pl-3 pr-1.5 py-2 border-r border-hairline text-xs cursor-pointer shrink-0 ${
+            className={`group flex items-center gap-1 pr-1.5 border-r border-hairline text-xs shrink-0 ${
               n.id === active.id ? 'bg-canvas-soft text-primary' : 'text-mute hover:text-ink'
             }`}
-            onClick={() => setActiveId(n.id)}
           >
-            <span className="max-w-[140px] truncate">{n.title || 'Untitled'}</span>
+            <button
+              type="button"
+              aria-current={n.id === active.id ? 'true' : undefined}
+              onClick={() => setActiveId(n.id)}
+              className="pl-3 py-2"
+            >
+              <span className="block max-w-[140px] truncate">{n.title || 'Untitled'}</span>
+            </button>
             <button
               type="button"
               title="Delete note"
-              onClick={(e) => {
-                e.stopPropagation();
+              aria-label={`Delete ${n.title || 'Untitled'}`}
+              onClick={() => {
                 if (!n.body || window.confirm(`Delete "${n.title}"?`)) remove(n.id);
               }}
-              className="p-0.5 rounded-xs opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:text-red-400"
+              className="inline-flex items-center justify-center p-0.5 rounded-xs [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:!opacity-100 hover:text-red-400"
             >
               <X className="w-3 h-3" />
             </button>
@@ -59,7 +65,7 @@ export const ScratchpadTool: React.FC = () => {
       </div>
       <PaneHeader
         title={
-          <input
+          <input aria-label="Note title"
             value={active.title}
             onChange={(e) => patch({ title: e.target.value })}
             className="bg-transparent text-ink text-xs normal-case tracking-normal font-medium focus:outline-none w-64"
@@ -69,7 +75,7 @@ export const ScratchpadTool: React.FC = () => {
         onClear={() => patch({ body: '' })}
         extra={<span className="text-[11px] text-mute font-mono mr-2">{active.body.length} chars · saved locally</span>}
       />
-      <textarea
+      <textarea aria-label="Note"
         autoFocus
         value={active.body}
         onChange={(e) => patch({ body: e.target.value })}

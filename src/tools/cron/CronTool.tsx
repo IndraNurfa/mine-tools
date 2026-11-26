@@ -35,7 +35,7 @@ export const CronTool: React.FC = () => {
   return (
     <div className="h-full flex flex-col min-h-0 bg-canvas">
       <Toolbar>
-        <input
+        <input aria-label="Cron expression"
           autoFocus
           value={expr}
           onChange={(e) => setExpr(e.target.value)}
@@ -53,7 +53,7 @@ export const CronTool: React.FC = () => {
         <div className="space-y-6">
           <Panel title="Meaning">
             {'error' in result ? (
-              <div className="text-base text-red-400">{result.error}</div>
+              <div className="text-sm text-red-400">{result.error}</div>
             ) : (
               <p className="text-2xl leading-snug text-ink-strong">{result.text}</p>
             )}
@@ -61,7 +61,7 @@ export const CronTool: React.FC = () => {
               {FIELDS.map((f, i) => (
                 <div key={f} className="rounded-md border border-hairline bg-canvas-soft py-3 min-w-0">
                   <div className="font-mono text-lg text-ink truncate px-1">{parts[i] ?? '·'}</div>
-                  <div className="text-[11px] uppercase tracking-wider text-mute mt-1 truncate px-1">{f}</div>
+                  <div className="text-[11px] uppercase tracking-[1.5px] text-mute mt-1 truncate px-1">{f}</div>
                 </div>
               ))}
             </div>

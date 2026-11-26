@@ -7,7 +7,7 @@ const statusTone = (s: number) =>
   s === 0 ? 'text-red-400 border-red-400/40 bg-red-400/10'
   : s < 300 ? 'text-primary border-primary/40 bg-primary/10'
   : s < 400 ? 'text-blue-400 border-blue-400/40 bg-blue-400/10'
-  : s < 500 ? 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10'
+  : s < 500 ? 'text-amber-400 border-amber-400/40 bg-amber-400/10'
   : 'text-red-400 border-red-400/40 bg-red-400/10';
 
 const MAX_SHOWN = 1_000_000;

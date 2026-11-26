@@ -48,10 +48,10 @@ export const DateCalcTool: React.FC = () => {
               <>
                 <div className="mb-4 rounded-md border border-primary/30 bg-primary/5 px-4 py-4">
                   <div className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">Span</div>
-                  <div className="mt-1 font-mono text-3xl text-ink-strong">
+                  <div className="mt-1 font-mono text-2xl text-ink-strong">
                     {diff.years}y {diff.months}m {diff.days}d
                   </div>
-                  {diff.negative && <div className="mt-1 text-xs text-yellow-400">“To” is earlier than “From”.</div>}
+                  {diff.negative && <div className="mt-1 text-xs text-amber-400">“To” is earlier than “From”.</div>}
                 </div>
                 <AutoGrid min={150}>
                   <Stat label="Days" value={diff.totalDays.toLocaleString()} copy={String(diff.totalDays)} />
@@ -83,7 +83,7 @@ export const DateCalcTool: React.FC = () => {
             <div className="mt-5">
               <div className="mb-4 rounded-md border border-primary/30 bg-primary/5 px-4 py-4">
                 <div className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">Result</div>
-                <div className="mt-1 font-mono text-3xl text-ink-strong">{ymd(result)}</div>
+                <div className="mt-1 font-mono text-2xl text-ink-strong">{ymd(result)}</div>
                 <div className="mt-1 text-sm text-body">{DOW[result.getDay()]}</div>
               </div>
               <AutoGrid min={150}>

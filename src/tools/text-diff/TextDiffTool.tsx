@@ -5,9 +5,21 @@ import { usePersistentState } from '../../lib/storage.ts';
 
 const LANGS = ['plaintext', 'markdown', 'json', 'yaml', 'javascript', 'typescript', 'python', 'go', 'sql', 'html', 'css', 'shell', 'xml'];
 
+const SAMPLE_LEFT = `# Release notes
+- JSON formatter with repair
+- Side-by-side diff
+- Works offline
+`;
+const SAMPLE_RIGHT = `# Release notes
+- JSON formatter with smart repair
+- Side-by-side diff
+- Works offline
+- Keyboard shortcuts
+`;
+
 export const TextDiffTool: React.FC = () => {
-  const [left, setLeft] = usePersistentState('text-diff', 'left', '');
-  const [right, setRight] = usePersistentState('text-diff', 'right', '');
+  const [left, setLeft] = usePersistentState('text-diff', 'left', SAMPLE_LEFT);
+  const [right, setRight] = usePersistentState('text-diff', 'right', SAMPLE_RIGHT);
   const [lang, setLang] = usePersistentState('text-diff', 'lang', 'plaintext');
 
   return (

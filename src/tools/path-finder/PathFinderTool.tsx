@@ -18,6 +18,7 @@ import {
   FolderTree,
   Route,
 } from 'lucide-react';
+import { TextBtn } from '../../components/ui.tsx';
 
 const SAMPLE_JSON = `{
   // Sample Loose JSON — click a key or value to copy its path
@@ -160,7 +161,7 @@ export const PathFinderTool: React.FC<PathFinderToolProps> = ({
         <div className="w-1/2 flex flex-col min-w-0 bg-canvas">
           <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-ink uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <span className="font-semibold text-ink uppercase tracking-[1.5px] text-[11px] flex items-center gap-1.5">
                 <FileCode className="w-3.5 h-3.5 text-primary" />
                 Input
               </span>
@@ -170,38 +171,18 @@ export const PathFinderTool: React.FC<PathFinderToolProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                onClick={handleLoadSample}
-                className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
-                title="Load sample loose JSON"
-              >
-                <Sparkles className="w-3 h-3 text-primary" />
-                <span>Sample</span>
-              </button>
-              <button
-                onClick={handlePasteInput}
-                className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
-                title="Paste from clipboard"
-              >
-                <ClipboardPaste className="w-3 h-3" />
-                <span>Paste</span>
-              </button>
-              <button
-                onClick={handleSmartRepair}
-                className="flex items-center gap-1 px-2 py-1 rounded-sm border border-hairline hover:border-primary text-ink hover:text-primary bg-canvas text-xs transition-colors"
-                title="Smart format / Repair broken JSON"
-              >
-                <Wrench className="w-3 h-3 text-primary" />
-                <span>Repair</span>
-              </button>
-              <button
-                onClick={handleClear}
-                className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-red-400 text-xs transition-colors flex items-center gap-1"
-                title="Clear input"
-              >
-                <Trash2 className="w-3 h-3" />
-                <span>Clear</span>
-              </button>
+              <TextBtn onClick={handleLoadSample} title="Load sample loose JSON">
+                <Sparkles className="w-3 h-3 text-primary" /> Sample
+              </TextBtn>
+              <TextBtn onClick={handlePasteInput} title="Paste from clipboard">
+                <ClipboardPaste className="w-3 h-3" /> Paste
+              </TextBtn>
+              <TextBtn onClick={handleSmartRepair} title="Smart format / Repair broken JSON">
+                <Wrench className="w-3 h-3 text-primary" /> Repair
+              </TextBtn>
+              <TextBtn danger onClick={handleClear} title="Clear input">
+                <Trash2 className="w-3 h-3" /> Clear
+              </TextBtn>
             </div>
           </div>
 

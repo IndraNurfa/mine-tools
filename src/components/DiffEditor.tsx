@@ -78,7 +78,7 @@ export const DiffEditor: React.FC<DiffEditorProps> = ({
           originalEditable: !readOnly,
           minimap: { enabled: false },
           fontSize: 13,
-          fontFamily: "'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+          fontFamily: "'SF Mono', 'JetBrains Mono Variable', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
           automaticLayout: true,
           renderSideBySide: true,
           // Monaco would otherwise switch to inline below 900px and hide the original editor.

@@ -113,7 +113,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Search row */}
         <div className="flex items-center gap-2.5 px-4 py-3 border-b border-hairline">
           <Search className="w-4 h-4 text-mute shrink-0" />
-          <input
+          <input aria-label="Search tools"
             data-focus="quiet"
             type="text"
             value={query}
@@ -151,10 +151,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       key={tool.id}
                       type="button"
                       data-palette-idx={thisIdx}
+                      data-instant
                       onClick={() => openTool(tool.route)}
                       onMouseEnter={() => setSelectedIndex(thisIdx)}
                       onFocus={() => setSelectedIndex(thisIdx)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left ${
                         isSelected
                           ? 'bg-primary/10 text-ink'
                           : 'text-body hover:bg-canvas hover:text-ink'
