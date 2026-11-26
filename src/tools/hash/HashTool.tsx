@@ -32,7 +32,7 @@ export const HashTool: React.FC = () => {
       <Toolbar>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">HMAC key</span>
-          <input
+          <input aria-label="HMAC key"
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
             placeholder="optional — leave empty for plain hash"
@@ -46,7 +46,7 @@ export const HashTool: React.FC = () => {
       </Toolbar>
       <div className="h-[40%] min-h-[120px] flex flex-col border-b border-hairline">
         <PaneHeader title="Text" onPaste={paste} onClear={() => setInput('')} />
-        <textarea
+        <textarea aria-label="Text to hash"
           autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}

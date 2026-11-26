@@ -1,5 +1,6 @@
 import React from 'react';
-import { Zap, Command, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Zap, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { shortcut } from '../lib/platform.ts';
 import { groupTools } from '../registry.ts';
 import { usePersistentState } from '../lib/storage.ts';
 import { useMediaQuery } from '../lib/useMediaQuery.ts';
@@ -86,18 +87,18 @@ export const Sidebar: React.FC<{ currentPath: string; onNavigate: (route: string
       <div className="p-2 border-t border-hairline space-y-2 shrink-0">
         {!collapsed && (
           <div className="px-2 pt-1 space-y-2">
-            <div className="text-[11px] uppercase font-semibold tracking-wider text-mute">Shortcuts</div>
+            <div className="text-[11px] uppercase font-semibold tracking-[1.5px] text-mute">Shortcuts</div>
             <div className="font-mono text-[11px] text-mute space-y-1">
               <div className="flex justify-between items-center">
                 <span>Jump to tool</span>
-                <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
-                  <Command className="w-2.5 h-2.5" />K
+                <kbd className="px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
+                  {shortcut('K')}
                 </kbd>
               </div>
               <div className="flex justify-between items-center">
                 <span>Find in AST</span>
                 <kbd className="px-1.5 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink">
-                  Ctrl+F
+                  {shortcut('F')}
                 </kbd>
               </div>
             </div>

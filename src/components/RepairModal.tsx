@@ -29,8 +29,8 @@ export const RepairModal: React.FC<RepairModalProps> = ({
       aria-modal="true"
       aria-label="Smart Repair Report"
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
-      <div className="bg-canvas border border-hairline rounded-md shadow-modal-stack w-full max-w-xl overflow-hidden flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150">
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-canvas border border-hairline rounded-md shadow-modal-stack w-full max-w-xl overflow-hidden flex flex-col max-h-[80vh] dialog-in">
         {/* Header */}
         <div className="px-5 py-4 border-b border-hairline flex items-center justify-between bg-canvas-soft">
           <div className="flex items-center gap-2.5">
@@ -95,7 +95,7 @@ export const RepairModal: React.FC<RepairModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-3 py-1.5 rounded-sm border border-hairline text-ink text-xs hover:bg-canvas transition-colors"
+              className="min-h-7 px-3 rounded-sm border border-hairline text-ink text-xs hover:bg-canvas transition-colors"
             >
               Cancel
             </button>

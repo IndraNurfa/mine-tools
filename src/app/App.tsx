@@ -6,7 +6,9 @@ import { CommandPalette } from '../components/CommandPalette.tsx';
 import { Launcher } from './Launcher.tsx';
 import { Sidebar } from './Sidebar.tsx';
 import { ToolErrorBoundary } from '../components/ToolErrorBoundary.tsx';
-import { Home, Command, RotateCcw } from 'lucide-react';
+import { Home, RotateCcw } from 'lucide-react';
+import { shortcut } from '../lib/platform.ts';
+import { TextBtn } from '../components/ui.tsx';
 import { usePersistentState, clearStored } from '../lib/storage.ts';
 
 const INITIAL_INPUT = `{
@@ -99,28 +101,30 @@ export const App: React.FC = () => {
               </div>
 
               {activeTool.resettable && (
-                <button
-                  type="button"
+                <TextBtn
+                  danger
+                  className="shrink-0"
                   onClick={() => {
                     if (!window.confirm(`Reset saved data for ${activeTool.name}?`)) return;
                     resetTool(activeTool.id);
                   }}
-                  className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-hairline bg-canvas-soft text-mute hover:text-ink hover:border-primary/40 transition-colors text-xs"
                   title="Clear this tool's saved input and settings"
+                  aria-label="Reset"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span className="hidden md:inline">Reset</span>
-                </button>
+                </TextBtn>
               )}
               <button
                 type="button"
                 onClick={openPalette}
                 className="shrink-0 inline-flex items-center gap-2 px-2.5 py-1.5 rounded-sm border border-hairline bg-canvas-soft text-mute hover:text-ink hover:border-primary/40 transition-colors text-xs"
-                title="Jump to tool (⌘K)"
+                title={`Jump to tool (${shortcut('K')})`}
+                aria-label="Jump to tool"
               >
                 <SearchHint />
                 <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-xs bg-canvas border border-hairline text-[11px] text-ink font-mono">
-                  <Command className="w-2.5 h-2.5" />K
+                  {shortcut('K')}
                 </kbd>
               </button>
             </header>

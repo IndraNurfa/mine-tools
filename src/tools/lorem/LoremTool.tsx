@@ -23,7 +23,7 @@ export const LoremTool: React.FC = () => {
           ]}
           onChange={setUnit}
         />
-        <input
+        <input aria-label="Count"
           type="number"
           min={1}
           max={1000}
@@ -38,7 +38,7 @@ export const LoremTool: React.FC = () => {
       </Toolbar>
       <PaneHeader title={`Output · ${text.split(/\s+/).length} words`} copyText={text} />
       <Page>
-        <div className="text-[15px] leading-8 text-body xl:columns-2 gap-12">
+        <div className="text-sm leading-8 text-body xl:columns-2 gap-12">
           {text.split('\n\n').map((p, i) => (
             <p key={i} className="mb-5 break-inside-avoid-column">
               {p}

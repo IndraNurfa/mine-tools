@@ -1,181 +1,200 @@
-# Design System: Voltagent / Dark Developer Platform
+# Design System: Toolbox
 
 ## Overview
 
-Voltagent is an AI agent engineering platform built for developers, and the brand wears that audience proudly: a near-black `{colors.canvas}` (`#101010`) page background that runs edge-to-edge with no light-mode counterpart, a single electric-green accent (`{colors.primary}` `#00d992`) reserved for CTAs, status pills, and the brand lightning glyph, and a typography system that pairs sentence-case Inter with SF Mono for inline code and command snippets. The whole page reads like polished documentation that decided to also sell something.
+Toolbox is an internal set of developer utilities. People open it, paste something, read the result and copy it, many times a day, on desktop and tablet. The design serves that loop: dense, calm, keyboard-friendly and fast. It keeps the Voltagent look (near-black canvas, one green accent, hairline borders, Inter + SF Mono) without its marketing-page patterns.
 
-The decorative system is restrained. There is no gradient mesh, no atmospheric backdrop, no illustration suite. Instead, the brand uses small typographic moments — a green code chip (`npx voltagent ...`), a 3-px outlined feature card sitting against the same near-black canvas, a green hairline divider between section bands — to mark its identity. The result is a page that feels engineered: every card has a hairline border, every snippet has a copy-to-clipboard button, every metric is rendered in a numeric monospace.
+**Principles**
 
-Type stays calm. Hero display sits at 60 px in regular weight with `-0.65 px` tracking — not a billboard headline, more like a documentation H1. Section headings step down to 36 px / 24 px in similar weights. Body copy is 16 px Inter at line-height 1.65 for the kind of legibility long-form devs expect. Uppercase eyebrows are common — `EVERYTHING YOU NEED` style mono-cap labels above section headlines — and they use Inter at weight 600 with wide positive tracking (`2.52 px` at 14 px).
+1. **Content first.** Tool bodies fill the width. Chrome stays small and quiet.
+2. **One accent.** Green marks what to do and where you are. Other hues only report status.
+3. **Hairlines, not shadows.** Borders separate surfaces.
+4. **Instant.** Frequent and keyboard-driven actions never animate.
+5. **Dark only.** There is no light mode and no theme toggle.
 
-**Key Characteristics:**
-
-- A single electric-green accent `{colors.primary}` (`#00d992`) carries every CTA, every status pill, and the brand's lightning logo. No second accent.
-- Dark canvas (`{colors.canvas}` `#101010`) is the only page surface — there is no light-mode rhythm; the entire site reads as one continuous dark surface broken by feature-card boundaries.
-- Hairline-bordered feature cards (`{colors.hairline}` `#3d3a39`, 1 px solid) are the brand's primary chrome — no shadows, no fills, just precise hairline rectangles.
-- A signature dashed-border accent (`1px dashed rgba(79, 93, 117, 0.4)`) appears between sections as a quiet rhythm cue — the brand's only ornamental line.
-- Inter + SF Mono pair carries every typographic role. SF Mono is reserved for code blocks, inline command snippets, and metric counters.
-- Buttons are tight 6 px rounded rectangles (not pills); only inline status tags use the 9999 px full pill.
+Tokens live in `tailwind.config.js`. This document is the target; [Not yet in code](#not-yet-in-code) lists where the app still differs.
 
 ## Colors
 
-### Brand & Accent
+### Core
 
-- **Electric Green** (`{colors.primary}` — `#00d992`): The single brand accent. Every primary CTA, every status pill, every "live" indicator, the brand's lightning glyph itself. Reserved.
-- **Primary Soft** (`{colors.primary-soft}` — `#2fd6a1`): A slightly more muted green used inside button-ghost variants and tooltip / focus indicators.
-- **Primary Deep** (`{colors.primary-deep}` — `#10b981`): The darker green used for inline link colour in body copy.
+| Token | Value | Use |
+| --- | --- | --- |
+| `canvas` | `#101010` | Page and editor background |
+| `canvas-soft` | `#1a1a1a` | Inputs, pane headers, panels, hovered rows |
+| `hairline` | `#3d3a39` | 1 px borders and dividers. **Never readable text** (1.7:1 on canvas); decorative glyphs only |
+| `ink` | `#f2f2f2` | Default text |
+| `ink-strong` | `#ffffff` | Page title and large values |
+| `body` | `#d0d0d0` | Secondary text |
+| `mute` | `#9ca3af` | Labels, hints, inactive icons. The dimmest text allowed |
+| `primary` | `#00d992` | Accent (see below) |
+| `primary-soft` | `#2fd6a1` | Primary hover, focus ring, inline code, numbers |
 
-### Surface
+### Where green is allowed
 
-- **Canvas** (`{colors.canvas}` — `#101010`): The default near-black page background. The only surface mode in the brand's marketing system.
-- **Canvas Soft** (`{colors.canvas-soft}` — `#1a1a1a`): A slightly lighter dark fill used inside code blocks and form inputs to mark them visually distinct against the canvas.
-- **Hairline** (`{colors.hairline}` — `#3d3a39`): 1 px solid borders — feature cards, buttons, dividers between rows. The brand's universal "edge" colour.
-- **Hairline Soft** (`{colors.hairline-soft}` — `#b8b3b0`): A lighter divider tint used in rare on-light secondary contexts.
+- The primary action's fill, with `canvas` text.
+- Selected and active states, as a tint: `bg-primary/15 text-primary`.
+- The focus ring and a focused input's border.
+- Success and "live" feedback.
+- Syntax colour for JSON keys and keywords.
 
-### Text
+Never use it for paragraphs, descriptions or decoration.
 
-- **Ink** (`{colors.ink}` — `#f2f2f2`): Default text colour on the dark canvas — slightly off-white to reduce contrast strain.
-- **Ink Strong** (`{colors.ink-strong}` — `#ffffff`): Pure-white text for hero headlines and high-emphasis copy.
-- **Body** (`{colors.body}` — `#bdbdbd`): Secondary text — supporting copy, body paragraphs in long-form sections.
-- **Mute** (`{colors.mute}` — `#8b949e`): Lowest-priority on-dark text — captions, fine print, footer secondary lines.
-- **Canvas Text Soft** (`{colors.canvas-text-soft}` — `#f5f6f7`): Used inside code mockups to keep code colour just slightly cooler than the surrounding body text.
+### Status colors
 
-### Semantic
+These carry meaning only. Always pair the color with a word, symbol or number.
 
-The brand doesn't surface a separate error / warning palette in its public marketing pages — the underlying Docusaurus default semantic palette exists in the design system but is reserved for in-product / docs contexts. Validation cues on the marketing surface use the primary green for success and a muted body grey for missing states.
+| Role | Tailwind | Use |
+| --- | --- | --- |
+| Success | `primary` | Valid, added, 2xx, GET |
+| Danger | `red-400` | Errors, removed, destructive hover, 4xx/5xx, DELETE |
+| Warning | `amber-400` | Changed, truncated data, POST, 3xx |
+| Info | `blue-400` | PUT and informational badges |
+| Extra | `purple-400` | PATCH only |
+
+Tinted status surfaces use the same hue at `/10` for the fill and `/40` for the border.
 
 ## Typography
 
-### Font Family
+- **Inter** for the interface. Weights 400, 500 and 600 only.
+- **SF Mono** (fallback JetBrains Mono, Menlo, Consolas) for anything typed, pasted or counted: inputs, outputs, paths, code, numbers. Use `tabular-nums` for values that update or line up.
+- Both faces are served by the app or the system. No third-party font requests.
 
-Two faces carry the system:
+| Role | Class | Size | Use |
+| --- | --- | --- | --- |
+| Label | `text-[11px] font-semibold uppercase tracking-[1.5px] text-mute` | 11 | Pane and group titles. Use the `Label` component |
+| Hint | `text-[11px]` | 11 | Keyboard hints, badges. The smallest size allowed |
+| Control | `text-xs` | 12 | Buttons, toolbar controls, navigation |
+| Content | `text-sm` | 14 | Inputs, outputs, page title (600) |
+| Code | Monaco `fontSize: 13` | 13 | Editors only |
+| Heading | `text-lg font-semibold` | 18 | Launcher title, empty states |
+| Value | `text-xl font-semibold font-mono` | 20 | `Stat` tiles |
+| Hero value | `text-2xl font-mono` | 24 | The single answer a tool exists to show |
 
-1. **Inter** for every display, body, button, and link role. Weights 400 / 500 / 600 / 700 are the working set. Used with OpenType features `"calt"` and `"rlig"` enabled across the page so the geometric Inter ligatures and contextual alternates render correctly.
-2. **SF Mono** (`SFMono-Regular` with Menlo / Monaco / Consolas / Liberation Mono fallbacks) for inline code, command snippets, terminal mockups, and the brand's numeric counters. Weights 400 / 549 / 550 / 700 are present — the unusual 549 / 550 sub-bold weight gives the mono a "slightly heavier than regular" voice for emphasis.
-
-### Hierarchy
-
-| Token                            | Size | Weight | Line Height | Letter Spacing | Use                                                        |
-| -------------------------------- | ---- | ------ | ----------- | -------------- | ---------------------------------------------------------- |
-| `{typography.display-xl}`        | 60px | 400    | 60px        | -0.65px        | Hero headline ("AI Agent Engineering Platform").           |
-| `{typography.display-lg}`        | 36px | 400    | 40px        | -0.9px         | Section headlines.                                         |
-| `{typography.display-md}`        | 24px | 700    | 32px        | -0.6px         | Sub-section / card-title displays.                         |
-| `{typography.display-sm}`        | 20px | 600    | 28px        | 0              | Card titles in dense grids.                                |
-| `{typography.eyebrow-mono}`      | 14px | 600    | 20px        | 2.52px         | UPPERCASE eyebrow tags ("EVERYTHING YOU NEED").            |
-| `{typography.eyebrow-uppercase}` | 18px | 600    | 28px        | 0.45px         | Larger uppercase eyebrows above hero subsections.          |
-| `{typography.body-lg}`           | 18px | 400    | 28px        | 0              | Lead paragraphs.                                           |
-| `{typography.body-md}`           | 16px | 400    | 26px        | 0              | Default body paragraph.                                    |
-| `{typography.body-md-strong}`    | 16px | 600    | 24px        | 0              | Bolded inline body.                                        |
-| `{typography.body-sm}`           | 14px | 400    | 20px        | 0              | Secondary body.                                            |
-| `{typography.body-sm-strong}`    | 14px | 600    | 23px        | 0              | Bold caption / pill-tag labels.                            |
-| `{typography.caption}`           | 12px | 400    | 16px        | 0              | Fine print.                                                |
-| `{typography.caption-strong}`    | 12px | 500    | 16px        | 0              | Bold caption.                                              |
-| `{typography.code}`              | 13px | 400    | 18px        | 0              | Code blocks, inline command snippets.                      |
-| `{typography.code-strong}`       | 13px | 550    | 16px        | 0              | Emphasised inline code (the SF Mono "almost-bold" weight). |
-| `{typography.button-md}`         | 16px | 600    | 24px        | 0              | Button labels.                                             |
-
-### Principles
-
-- **Inter regular at 60 px display** is the brand's calming counter to AI marketing's tendency to shout. The light tracking and modest weight read like documentation.
-- **Two-face contrast carries the technical voice.** Inter for narrative; SF Mono for anything that could be typed at a terminal.
-- **Uppercase eyebrow with tracking is the brand's signature label style.** `2.52 px` at 14 px is the documented value.
-
-### Note on Font Substitutes
-
-- **Sans** — _Inter_ is the brand's actual face; substitute is the brand itself when self-hosting is not available.
-- **Mono** — _SF Mono_ is Apple-system; _JetBrains Mono_ or _Geist Mono_ are the best free substitutes.
+Sentence case everywhere except labels.
 
 ## Layout
 
-### Spacing System
+### Spacing
 
-- **Base unit**: 4 px; small 5 / 6.4 px values appear inside code-mockup line-height compensation.
-- **Tokens**: `{spacing.xxs}` 2 px · `{spacing.xs}` 4 px · `{spacing.sm}` 8 px · `{spacing.md}` 12 px · `{spacing.lg}` 16 px · `{spacing.xl}` 20 px · `{spacing.2xl}` 24 px · `{spacing.3xl}` 32 px · `{spacing.4xl}` 40 px · `{spacing.5xl}` 48 px · `{spacing.6xl}` 64 px.
-- **Section padding**: hero + content bands use `{spacing.5xl}` 48 px top/bottom.
-- **Card interior padding**: feature cards sit at `{spacing.2xl}` 24 px.
+4 px base. Prefer 4, 8, 12, 16 and 24 px. Panels use 16 px padding; pages use 20 px, 24 px from `lg`.
 
-### Grid & Container
+### Fixed sizes
 
-- Marketing container centres at roughly 1200 – 1400 px; content stays edge-to-edge in colour with horizontal gutters of `{spacing.3xl}` on desktop.
-- Feature-card grids: 2-up to 3-up at desktop, 1-up at mobile.
+| Element | Size |
+| --- | --- |
+| App header | 56 px |
+| Pane header / toolbar | 40 px minimum, grows when it wraps |
+| Sidebar | 256 px expanded, 56 px icon rail |
+| Control height | 28 px with a mouse, 40 px on `pointer: coarse` |
 
-### Elevation & Depth
+### Responsive rules
 
-| Level                 | Treatment                                                                                     | Use                                        |
-| --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Level 0 — Flat        | No shadow, no border.                                                                         | Full-bleed bands.                          |
-| Level 1 — Hairline    | 1 px solid `{colors.hairline}` border on `{colors.canvas}`.                                   | Default for every feature card and button. |
-| Level 2 — Inset Glow  | `0 0 15px rgba(92, 88, 85, 0.2)` subtle outer glow.                                           | Hovering / featured cards.                 |
-| Level 3 — Modal Stack | `0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(148,163,184,0.1) inset` heavy drop + inset ring. | Modal / dialog surfaces in-product.        |
+The smallest supported width is **768 px** (tablet). There is no phone layout.
 
-### Decorative Depth
+| Width | Behaviour |
+| --- | --- |
+| 768 – 1023 | Icon rail. Header description hidden |
+| 1024 – 1279 | Icon rail. Two-pane tools sit side by side |
+| 1280 and up | Sidebar expanded unless the user collapsed it |
 
-- Hairline cards on dark canvas — the brand's only true elevation mode.
-- A 2 px solid `{colors.primary}` green border occasionally marks "featured" or "active" status on a card.
-- A 1 px dashed `rgba(79, 93, 117, 0.4)` divider sits between section bands as a quiet rhythm cue.
+- Toolbars use `flex-wrap`. Nothing may be pushed off-screen.
+- The tool name never truncates; the description does.
+- Editor comparisons stay side by side at every width.
+- Use `Page`, `Panel`, `AutoGrid` and `Stat`. Never wrap a tool in `max-w-*`.
+- Every tool opens with a useful sample, never an empty box.
 
-## Shapes
+## Shape and depth
 
-### Border Radius Scale
+| Token | Value | Use |
+| --- | --- | --- |
+| `rounded-xs` | 4 px | Kbd, chips, tree rows, segments inside a switch |
+| `rounded-sm` | 6 px | Buttons, inputs, switches |
+| `rounded-md` | 8 px | Panels, cards, dialogs |
+| `rounded-pill` | 9999 px | Status tags and dots |
 
-| Token            | Value  | Use                                       |
-| ---------------- | ------ | ----------------------------------------- |
-| `{rounded.none}` | 0px    | Full-bleed bands.                         |
-| `{rounded.xs}`   | 4px    | Smallest inline pills, code inline chips. |
-| `{rounded.sm}`   | 6px    | Default button and input radius.          |
-| `{rounded.md}`   | 8px    | Card chrome, code-block chrome.           |
-| `{rounded.pill}` | 9999px | Inline status tags ("Live", "Beta").      |
-| `{rounded.full}` | 9999px | Circular icon containers.                 |
+Always name the size; bare `rounded` is not used.
+
+| Level | Treatment | Use |
+| --- | --- | --- |
+| Flat | 1 px `hairline` | Panels, cards, buttons |
+| Glow | `shadow-inset-glow` | Active navigation item, selected launcher card |
+| Modal | `shadow-modal-stack` + `bg-black/60` backdrop | Dialogs, palette, toasts |
 
 ## Components
 
+Use the shared components in `src/components/ui.tsx`. Add a variant there before styling a new button or input by hand.
+
 ### Buttons
 
-**`button-primary`** — the electric-green CTA.
-- Background `{colors.primary}`, text `{colors.on-primary}` (near-black `#101010`), label `{typography.button-md}`, padding `{spacing.md} {spacing.lg}`, shape `{rounded.sm}` 6 px.
+| Variant | Style | Rule |
+| --- | --- | --- |
+| Primary | `bg-primary text-canvas font-semibold`, hover `bg-primary-soft` | The one main action (Send, Copy result, Apply). **At most one per view** |
+| Secondary | `border-hairline bg-canvas-soft text-mute`, hover `text-ink border-primary/40` | Everything else |
+| Icon | No border, `text-mute`, hover `bg-canvas-soft` | Pane actions. Needs `title` and an accessible name |
+| Danger | Secondary, hover `text-red-400` | Clear, delete, reset |
 
-**`button-outline-on-dark`** — the hairline-on-dark secondary button.
-- Background `{colors.canvas}`, text `{colors.ink}`, 1 px solid `{colors.hairline}` border, same typography / padding / shape.
+### Segmented switch
 
-**`button-ghost-green`** — text-only with green label, for tertiary actions.
-- Background `{colors.canvas}`, text `{colors.primary-soft}`, no border.
+Hairline container. The selected segment is **tinted** (`bg-primary/15 text-primary`), never solid, so it can't be mistaken for the primary action. Set `aria-pressed` on each segment.
 
-**`button-pill-tag`** — the inline pill for category tags / status labels.
-- Background `{colors.canvas}`, text `{colors.ink}`, hairline border, body in `{typography.body-sm}`, padding `{spacing.xs} {spacing.md}`, shape `{rounded.pill}` 9999 px.
+### Inputs
 
-### Cards & Containers
+`bg-canvas-soft`, 1 px `hairline`, `rounded-sm`, monospace; focus turns the border `primary`. Large text areas sit flush on `canvas`. Every input has a visible label or an `aria-label`. Tokens, passwords and cookies use `SecretInput`.
 
-**`card-feature`** — the default feature card.
-- Background `{colors.canvas}`, text `{colors.ink}`, 1 px solid `{colors.hairline}` border, padding `{spacing.2xl}`, shape `{rounded.md}` 8 px. The brand's most-repeated card chrome.
+### Panes
 
-**`card-feature-emphasized`** — the same card with a 3 px hairline border for emphasis.
-- Same chrome as `card-feature` with 3 px solid `{colors.hairline}`.
+A pane is a header (label left, actions right) above a body that fills the remaining height and scrolls on its own.
 
-**`code-mockup`** — the dark code-editor card with copy-to-clipboard affordance.
-- Background `{colors.canvas}`, text `{colors.ink}`, 1 px solid `{colors.hairline}`, body in `{typography.code}` (SF Mono 13 px), padding `{spacing.xl}`, shape `{rounded.md}`.
+### Feedback
 
-**`code-inline-chip`** — the inline command snippet pill.
-- Background `{colors.canvas-soft}`, text `{colors.canvas-text-soft}`, body in `{typography.code}`, padding `{spacing.xxs} {spacing.sm}`, shape `{rounded.sm}`.
+- **Copy:** every output can be copied, and a toast confirms it.
+- **Errors:** next to the input that caused them, in `red-400`, saying what to fix. Keep the last good output where possible.
+- **Destructive actions:** confirm before deleting something the user typed.
+- **Crashes:** `ToolErrorBoundary` offers reload and reset.
 
-### Inputs & Forms
+## Interaction states
 
-**`text-input`** — the standard text input on dark.
-- Background `{colors.canvas-soft}`, text `{colors.ink}`, 1 px solid `{colors.hairline}`, body in `{typography.body-sm}`, padding `{spacing.md} {spacing.lg}`, shape `{rounded.sm}` 6 px.
+| State | Rule |
+| --- | --- |
+| Hover | Color or border only, and only on devices that can hover (`hoverOnlyWhenSupported`). Nothing may be *reachable* only by hover |
+| Press | `active:scale-[0.97]` on buttons |
+| Focus | 2 px `primary-soft` inset ring on `:focus-visible` (defined in `index.css`) |
+| Selected | Green tint plus a second cue (border, dot or `aria-current`) |
+| Disabled | 40% opacity and `disabled` |
 
-## Do's and Don'ts
+## Motion
 
-### Do
+| Surface | Motion |
+| --- | --- |
+| Command palette, tool switching, tree expand, any keyboard action | None |
+| Hover and selection color | `transition-colors`, 150 ms |
+| Button press | Transform, 120 ms ease-out |
+| Dialog | Fade and `scale(0.97)` to 1, 180 ms in. Closes instantly |
+| Toast | Fade and 8 px rise, 180 ms in, 120 ms out |
 
-- Reserve `{colors.primary}` (`#00d992`) for every primary CTA, the lightning logo glyph, and live-status indicators. The green is the brand's centre of gravity.
-- Use the dark `{colors.canvas}` (`#101010`) as the only page surface. There is no light-mode rhythm.
-- Build cards with 1 px `{colors.hairline}` borders, not shadows. Hairlines on dark IS the brand's elevation system.
-- Pair Inter (sentence-case) with SF Mono (inline code, command snippets). Every uppercase moment uses Inter at weight 600 with `2.52 px` tracking — not a separate mono.
-- Use `{rounded.sm}` 6 px for buttons, `{rounded.md}` 8 px for cards, `{rounded.pill}` 9999 px only for inline status tags.
+Ease-out curve: `cubic-bezier(0.23, 1, 0.32, 1)`. Never `transition-all`. Under `prefers-reduced-motion`, keep fades and drop movement.
 
-### Don't
+## Accessibility
 
-- Don't introduce a light-mode counterpart. The brand is dark-canvas only.
-- Don't use the primary green as a body-text fill. It's CTA-only.
-- Don't drop a soft drop-shadow on cards. The brand uses hairlines + occasional glow, never material shadows.
-- Don't render the hero headline in heavy weight (700+). The brand's display is intentionally calm at weight 400.
-- Don't replace Inter or SF Mono with a different family — both faces are part of the brand's voice and pairing.
+- Everything works with a keyboard. Clickable things are `button` or `a`.
+- Dialogs trap focus, close on Escape and restore focus (`useDialogFocus`).
+- Text meets 4.5:1; `mute` is the floor.
+- Touch targets are at least 40 px on `pointer: coarse`.
+- Shortcut hints match the platform: `⌘K` and `⌘F` on macOS, `Ctrl` elsewhere.
+
+## Do and don't
+
+**Do** use shared components, show a sample by default, wrap toolbars, and label every control.
+
+**Don't** add a light theme, a second accent, card drop shadows, new font families, new type sizes, or animation on frequent actions.
+
+## Not yet in code
+
+Remove each row once the code matches.
+
+| # | Gap | Where |
+| --- | --- | --- |
+| 1 | Some buttons are still styled by hand, so heights vary around the 28 px mouse size | Tool-specific toggles, `TreeSearchBar`, `ErrorBanner`, `RepairModal` |
+| 2 | Editing a tree value needs a double-click; there is no keyboard way | `TreeView` |
+| 3 | URL passwords are shown and saved in plain text | URL Parser |

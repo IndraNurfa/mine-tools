@@ -8,7 +8,7 @@ import { PaneHeader, textareaCls, usePaste } from '../../components/ui.tsx';
 const BADGE = {
   valid: ['Not expired', 'text-primary border-primary/40 bg-primary/10'],
   expired: ['Expired', 'text-red-400 border-red-400/40 bg-red-400/10'],
-  'not-yet-valid': ['Not valid yet', 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10'],
+  'not-yet-valid': ['Not valid yet', 'text-amber-400 border-amber-400/40 bg-amber-400/10'],
   'no-expiry': ['No exp claim', 'text-mute border-hairline bg-canvas-soft'],
 } as const;
 
@@ -48,7 +48,7 @@ export const JwtTool: React.FC = () => {
             </>
           }
         />
-        <textarea
+        <textarea aria-label="JWT"
           autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}

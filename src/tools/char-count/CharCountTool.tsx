@@ -83,7 +83,7 @@ export const CharCountTool: React.FC = () => {
             </button>
           </div>
         </div>
-        <textarea
+        <textarea aria-label="Text to count"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type or paste text — counts update live…"

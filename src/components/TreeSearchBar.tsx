@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown, ChevronUp, X, List, SlidersHorizontal, Check } from 'lucide-react';
+import { shortcut } from '../lib/platform.ts';
 import { SearchScope, SearchMatch } from '../core/search/search.ts';
 import { PathFormat, formatPath } from '../core/path/format.ts';
 
@@ -70,13 +71,13 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       {/* Search Input Box */}
       <div className="flex items-center gap-2 bg-canvas border border-hairline rounded-sm px-2.5 py-1.5 focus-within:border-primary transition-colors flex-1 min-w-[200px]">
         <Search className="w-3.5 h-3.5 text-mute shrink-0" />
-        <input
+        <input aria-label="Search the tree"
           ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search in AST (Ctrl+F / Cmd+F)..."
+          placeholder={`Search in AST (${shortcut('F')})...`}
           className="bg-transparent text-ink placeholder-mute focus:outline-none w-full text-xs font-mono"
         />
         {query && (
@@ -113,7 +114,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
           }}
           disabled={matches.length === 0}
           title="Previous match (Shift+Enter)"
-          className="p-1 text-mute hover:text-ink disabled:opacity-40 rounded border border-hairline hover:bg-canvas transition-colors"
+          className="p-1 text-mute hover:text-ink disabled:opacity-40 rounded-xs border border-hairline hover:bg-canvas transition-colors"
         >
           <ChevronUp className="w-3.5 h-3.5" />
         </button>
@@ -126,7 +127,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
           }}
           disabled={matches.length === 0}
           title="Next match (Enter)"
-          className="p-1 text-mute hover:text-ink disabled:opacity-40 rounded border border-hairline hover:bg-canvas transition-colors"
+          className="p-1 text-mute hover:text-ink disabled:opacity-40 rounded-xs border border-hairline hover:bg-canvas transition-colors"
         >
           <ChevronDown className="w-3.5 h-3.5" />
         </button>
@@ -164,23 +165,27 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={() => onMatchCaseChange(!matchCase)}
+          aria-pressed={matchCase}
           className={`px-2 py-1 rounded-sm border font-mono text-[11px] transition-colors ${
             matchCase
-              ? 'border-primary bg-primary/10 text-primary font-bold'
+              ? 'border-primary bg-primary/10 text-primary font-semibold'
               : 'border-hairline text-mute hover:text-ink bg-canvas'
           }`}
           title="Match Case"
+          aria-label="Match Case"
         >
           Aa
         </button>
         <button
           onClick={() => onUseRegexChange(!useRegex)}
+          aria-pressed={useRegex}
           className={`px-2 py-1 rounded-sm border font-mono text-[11px] transition-colors ${
             useRegex
-              ? 'border-primary bg-primary/10 text-primary font-bold'
+              ? 'border-primary bg-primary/10 text-primary font-semibold'
               : 'border-hairline text-mute hover:text-ink bg-canvas'
           }`}
           title="Use Regular Expression"
+          aria-label="Use Regular Expression"
         >
           .*
         </button>
@@ -204,7 +209,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       {/* Close search button */}
       <button
         onClick={onClose}
-        className="p-1 text-mute hover:text-ink rounded transition-colors ml-auto"
+        className="p-1 text-mute hover:text-ink rounded-xs transition-colors ml-auto"
         title="Close find (Esc)"
       >
         <X className="w-4 h-4" />
@@ -214,7 +219,7 @@ export const TreeSearchBar: React.FC<TreeSearchBarProps> = ({
       {showMatchesList && matches.length > 0 && (
         <div className="absolute top-full left-0 right-0 z-40 bg-canvas border-b border-hairline shadow-modal-stack max-h-60 overflow-y-auto">
           <div className="px-3 py-2 border-b border-hairline/50 text-[11px] text-mute flex justify-between items-center bg-canvas-soft">
-            <span className="font-semibold uppercase tracking-wider text-[11px]">
+            <span className="font-semibold uppercase tracking-[1.5px] text-[11px]">
               Found {isCapped ? '1000+' : matches.length} matches — Click any path to jump
             </span>
             <button

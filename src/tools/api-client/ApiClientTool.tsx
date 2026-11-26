@@ -25,7 +25,7 @@ const isHistory = (items: HistoryItem[]) =>
 type Tab = 'params' | 'headers' | 'auth' | 'body' | 'vars' | 'history' | 'curl';
 
 const HEADER_NAMES = ['Accept', 'Authorization', 'Content-Type', 'Cache-Control', 'User-Agent', 'X-Requested-With', 'Origin', 'Referer', 'Cookie', 'If-None-Match'];
-const METHOD_TONE: Record<string, string> = { GET: 'text-primary', POST: 'text-yellow-400', PUT: 'text-blue-400', PATCH: 'text-purple-400', DELETE: 'text-red-400' };
+const METHOD_TONE: Record<string, string> = { GET: 'text-primary', POST: 'text-amber-400', PUT: 'text-blue-400', PATCH: 'text-purple-400', DELETE: 'text-red-400' };
 
 export const ApiClientTool: React.FC = () => {
   const [req, setReq] = usePersistentState<ApiRequest>('api-client', 'request', emptyRequest, isApiRequest);
@@ -101,7 +101,7 @@ export const ApiClientTool: React.FC = () => {
     >
       {/* URL bar */}
       <div className="shrink-0 border-b border-hairline px-4 py-3 flex items-center gap-2">
-        <select
+        <select aria-label="Method"
           value={req.method}
           onChange={(e) => patch({ method: e.target.value })}
           className={`${inputCls} py-2 font-semibold ${METHOD_TONE[req.method] ?? 'text-ink'}`}
@@ -110,7 +110,7 @@ export const ApiClientTool: React.FC = () => {
             <option key={m}>{m}</option>
           ))}
         </select>
-        <input
+        <input aria-label="Request URL"
           autoFocus
           value={req.url}
           onChange={(e) => patch({ url: e.target.value })}
@@ -175,7 +175,7 @@ export const ApiClientTool: React.FC = () => {
                 )}
                 {req.auth.type === 'basic' && (
                   <div className="flex gap-2">
-                    <input value={req.auth.username} onChange={(e) => patch({ auth: { ...req.auth, username: e.target.value } })} placeholder="username" className={`${inputCls} flex-1`} />
+                    <input aria-label="Username" value={req.auth.username} onChange={(e) => patch({ auth: { ...req.auth, username: e.target.value } })} placeholder="username" className={`${inputCls} flex-1`} />
                     <SecretInput value={req.auth.password} onChange={(e) => patch({ auth: { ...req.auth, password: e.target.value } })} placeholder="password" />
                   </div>
                 )}
@@ -210,11 +210,11 @@ export const ApiClientTool: React.FC = () => {
                     </TextBtn>
                   )}
                   {(req.method === 'GET' || req.method === 'HEAD') && req.bodyMode !== 'none' && (
-                    <span className="text-xs text-yellow-400">{req.method} requests are sent without a body.</span>
+                    <span className="text-xs text-amber-400">{req.method} requests are sent without a body.</span>
                   )}
                 </div>
                 {(req.bodyMode === 'json' || req.bodyMode === 'text') && (
-                  <textarea
+                  <textarea aria-label="Request body"
                     value={req.body}
                     onChange={(e) => patch({ body: e.target.value })}
                     spellCheck={false}
@@ -236,7 +236,7 @@ export const ApiClientTool: React.FC = () => {
               <div className="h-full flex flex-col gap-3">
                 <div className="flex flex-col gap-2 flex-1 min-h-[110px]">
                   <PaneHeader title="Import from cURL" onClear={() => setCurlText('')} />
-                  <textarea
+                  <textarea aria-label="cURL command to import"
                     value={curlText}
                     onChange={(e) => setCurlText(e.target.value)}
                     spellCheck={false}
@@ -244,10 +244,10 @@ export const ApiClientTool: React.FC = () => {
                     className={`${textareaCls} border border-hairline rounded-sm`}
                   />
                   <div className="flex items-center gap-3">
-                    <TextBtn primary onClick={importCurl}>
+                    <TextBtn onClick={importCurl}>
                       <TerminalIcon className="w-3.5 h-3.5" /> Import (replaces current request)
                     </TextBtn>
-                    {curlError && <span className={`text-xs ${curlError.startsWith('Imported') ? 'text-yellow-400' : 'text-red-400'}`}>{curlError}</span>}
+                    {curlError && <span className={`text-xs ${curlError.startsWith('Imported') ? 'text-amber-400' : 'text-red-400'}`}>{curlError}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

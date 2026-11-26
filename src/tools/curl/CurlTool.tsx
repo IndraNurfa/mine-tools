@@ -75,7 +75,7 @@ export const CurlTool: React.FC = () => {
               </>
             }
           />
-          <textarea
+          <textarea aria-label="cURL command"
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -111,7 +111,7 @@ export const CurlTool: React.FC = () => {
                   </pre>
                 </div>
               )}
-              {ok!.notes.length > 0 && <div className="text-yellow-400">Note: {ok!.notes.join('; ')}</div>}
+              {ok!.notes.length > 0 && <div className="text-amber-400">Note: {ok!.notes.join('; ')}</div>}
               <div className="space-y-2">
                 <div className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute">Variables</div>
                 <VarsPanel names={names} values={vars} onChange={setVars} />
@@ -141,7 +141,7 @@ export const CurlTool: React.FC = () => {
           </pre>
         </div>
         {leftover.length > 0 && (
-          <div className="px-4 py-2 text-xs text-yellow-400 border-b border-hairline">
+          <div className="px-4 py-2 text-xs text-amber-400 border-b border-hairline">
             Unfilled variables will be sent literally: {leftover.map((n) => `{{${n}}}`).join(', ')}
           </div>
         )}

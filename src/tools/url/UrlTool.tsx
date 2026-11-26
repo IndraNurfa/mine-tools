@@ -34,7 +34,7 @@ export const UrlTool: React.FC = () => {
           onClear={() => setInput('')}
           extra={'error' in parsed ? <span className="text-xs text-red-400 mr-2">{parsed.error}</span> : undefined}
         />
-        <textarea
+        <textarea aria-label="URL"
           autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -66,12 +66,12 @@ export const UrlTool: React.FC = () => {
               </div>
               {u.params.map(([k, v], i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <input
+                  <input aria-label={`Parameter ${i + 1} name`}
                     value={k}
                     onChange={(e) => setParams(u.params.map((p, j) => (j === i ? [e.target.value, p[1]] : p)))}
                     className={`${inputCls} w-2/5`}
                   />
-                  <input
+                  <input aria-label={`Parameter ${i + 1} value`}
                     value={v}
                     onChange={(e) => setParams(u.params.map((p, j) => (j === i ? [p[0], e.target.value] : p)))}
                     className={`${inputCls} flex-1`}

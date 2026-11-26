@@ -6,7 +6,12 @@ export interface ToastItem {
   message: string;
   type?: 'success' | 'info' | 'error';
   code?: string;
+  /** Playing its exit animation. */
+  leaving?: boolean;
 }
+
+/** Matches the `.toast-out` duration in index.css. */
+const EXIT_MS = 120;
 
 interface ToastContextType {
   showToast: (message: string, options?: { type?: 'success' | 'info' | 'error'; code?: string }) => void;
@@ -23,6 +28,11 @@ export function useToast() {
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), EXIT_MS);
+  }, []);
+
   const showToast = useCallback((message: string, options?: { type?: 'success' | 'info' | 'error'; code?: string }) => {
     const id = Math.random().toString(36).substring(2, 9);
     const item: ToastItem = {
@@ -32,23 +42,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       code: options?.code,
     };
     setToasts((prev) => [...prev.slice(-3), item]); // Keep max 4 toasts
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 2800);
-  }, []);
+    setTimeout(() => removeToast(id), 2800);
+  }, [removeToast]);
 
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
+      <div role="status" className="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="pointer-events-auto flex items-center gap-3 bg-canvas-soft border border-hairline px-4 py-3 rounded-sm shadow-modal-stack text-sm animate-in fade-in slide-in-from-bottom-2 duration-150 max-w-md"
+            className={`pointer-events-auto flex items-center gap-3 bg-canvas-soft border border-hairline px-4 py-3 rounded-sm shadow-modal-stack text-sm max-w-md ${toast.leaving ? 'toast-out' : 'toast-in'}`}
           >
             {toast.type === 'success' && <Check className="w-4 h-4 text-primary shrink-0" />}
             {toast.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />}
@@ -65,7 +70,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-mute hover:text-ink p-1 rounded transition-colors"
+              aria-label="Dismiss"
+              className="text-mute hover:text-ink p-1 rounded-sm transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>

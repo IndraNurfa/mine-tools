@@ -91,7 +91,7 @@ export const EncoderTool: React.FC = () => {
       <div className="flex-1 min-h-0 grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-hairline">
         <div className="flex flex-col min-h-0">
           <PaneHeader title="Input" onPaste={paste} onClear={() => setInput('')} />
-          <textarea
+          <textarea aria-label="Input"
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -106,7 +106,7 @@ export const EncoderTool: React.FC = () => {
             copyText={output}
             extra={error ? <span className="text-xs text-red-400 mr-2">{error}</span> : undefined}
           />
-          <textarea readOnly value={output} spellCheck={false} className={textareaCls} />
+          <textarea aria-label="Output" readOnly value={output} spellCheck={false} className={textareaCls} />
         </div>
       </div>
     </div>

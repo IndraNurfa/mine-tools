@@ -34,7 +34,7 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
         {onRepair && (
           <button
             onClick={onRepair}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-sm bg-primary text-canvas hover:bg-primary-soft transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-sm border border-hairline bg-canvas text-ink hover:border-primary hover:text-primary transition-colors"
             title="Attempt to fix missing commas, unclosed brackets, and loose syntax"
           >
             <Wrench className="w-3.5 h-3.5" />
@@ -44,7 +44,8 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="p-1 text-mute hover:text-ink rounded transition-colors"
+            aria-label="Dismiss error"
+            className="p-1 text-mute hover:text-ink rounded-sm transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

@@ -15,15 +15,15 @@ export const ColorTool: React.FC = () => {
   return (
     <div className="h-full flex flex-col min-h-0 bg-canvas">
       <Toolbar>
-        <input
+        <input aria-label="Color value"
           autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}
           spellCheck={false}
           placeholder="#00d992 · rgb(0 217 146) · hsl(162, 100%, 43%)"
-          className={`${inputCls} flex-1 min-w-[260px] text-base py-2.5`}
+          className={`${inputCls} flex-1 min-w-[260px] text-sm py-2.5`}
         />
-        <input
+        <input aria-label="Pick a color"
           type="color"
           value={c ? toHex({ ...c, a: 1 }) : '#000000'}
           onChange={(e) => setInput(e.target.value)}
@@ -68,7 +68,7 @@ export const ColorTool: React.FC = () => {
                 <div className="flex rounded-md overflow-hidden border border-hairline">
                   {shades(c).map((h) => (
                     <button key={h} type="button" title={h} onClick={() => copy(h, `${h} copied`)} className="flex-1 h-20 group relative" style={{ background: h }}>
-                      <span className="absolute inset-x-0 bottom-1 text-[10px] font-mono opacity-0 group-hover:opacity-100 mix-blend-difference text-white">{h}</span>
+                      <span className="absolute inset-x-0 bottom-1 text-[11px] font-mono [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 mix-blend-difference text-white">{h}</span>
                     </button>
                   ))}
                 </div>

@@ -15,6 +15,8 @@ import {
   ChevronsUpDown,
   ChevronsDownUp,
 } from 'lucide-react';
+import { IconBtn, Segmented, TextBtn } from './ui.tsx';
+import { shortcut } from '../lib/platform.ts';
 
 /**
  * Row-level click behavior (not key/value tokens).
@@ -279,134 +281,83 @@ export const TreeView: React.FC<TreeViewProps> = ({
         <div className="border-b border-hairline bg-canvas-soft p-3 flex flex-col gap-2 shrink-0">
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <div className="flex items-center gap-2 flex-1 min-w-[220px]">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-mute shrink-0">
+              <span className="text-[11px] font-semibold uppercase tracking-[1.5px] text-mute shrink-0">
                 Selected Path:
               </span>
               <div
                 onClick={handleManualCopyPath}
                 className="font-mono text-sm text-primary font-medium truncate bg-canvas px-3 py-1.5 rounded-sm border border-hairline flex-1 cursor-pointer hover:border-primary/50 transition-colors"
                 title="Click to copy"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleManualCopyPath())}
               >
                 {currentFormattedPath || '<root>'}
               </div>
             </div>
 
             {/* Accessible Copy Button */}
-            <button
-              onClick={handleManualCopyPath}
-              className={`flex items-center gap-2 px-4 py-2 rounded-sm font-semibold text-xs transition-all shadow-sm shrink-0 active:scale-95 ${
-                copiedRecently
-                  ? 'bg-primary-soft text-canvas'
-                  : 'bg-primary hover:bg-primary-soft text-canvas'
-              }`}
-              title="Copy selected path to clipboard"
-            >
+            <TextBtn primary onClick={handleManualCopyPath} title="Copy selected path to clipboard">
               {copiedRecently ? (
                 <>
-                  <Check className="w-4 h-4 stroke-[2.5]" />
-                  <span>Copied!</span>
+                  <Check className="w-3.5 h-3.5" /> Copied!
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4 stroke-[2.5]" />
-                  <span>Copy Path</span>
+                  <Copy className="w-3.5 h-3.5" /> Copy Path
                 </>
               )}
-            </button>
+            </TextBtn>
           </div>
 
           {/* Format Selector & Tree Actions Row */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-hairline/40">
             <div className="flex items-center gap-2">
               <span className="text-mute text-[11px]">Format:</span>
-              <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
-                <button
-                  onClick={() => handleFormatChange('js')}
-                  className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
-                    pathFormat === 'js'
-                      ? 'bg-primary text-canvas font-semibold'
-                      : 'text-mute hover:text-ink'
-                  }`}
-                >
-                  JS
-                </button>
-                <button
-                  onClick={() => handleFormatChange('jsonpath')}
-                  className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
-                    pathFormat === 'jsonpath'
-                      ? 'bg-primary text-canvas font-semibold'
-                      : 'text-mute hover:text-ink'
-                  }`}
-                >
-                  JSONPath
-                </button>
-                <button
-                  onClick={() => handleFormatChange('gjson')}
-                  className={`px-2 py-0.5 rounded-xs font-mono text-[11px] transition-colors ${
-                    pathFormat === 'gjson'
-                      ? 'bg-primary text-canvas font-semibold'
-                      : 'text-mute hover:text-ink'
-                  }`}
-                >
-                  Gjson
-                </button>
-              </div>
+              <Segmented
+                mono
+                value={pathFormat}
+                onChange={handleFormatChange}
+                options={[
+                  { id: 'js', label: 'JS' },
+                  { id: 'jsonpath', label: 'JSONPath' },
+                  { id: 'gjson', label: 'Gjson' },
+                ]}
+              />
             </div>
 
             <div className="flex items-center gap-1">
-              <button
-                onClick={handleExpandAll}
-                className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
-                title="Expand all"
-              >
+              <IconBtn title="Expand all" onClick={handleExpandAll}>
                 <ChevronsUpDown className="w-3.5 h-3.5 text-primary" />
-              </button>
-              <button
-                onClick={handleCollapseAll}
-                className="p-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink transition-colors"
-                title="Collapse all"
-              >
-                <ChevronsDownUp className="w-3.5 h-3.5 text-mute" />
-              </button>
+              </IconBtn>
+              <IconBtn title="Collapse all" onClick={handleCollapseAll}>
+                <ChevronsDownUp className="w-3.5 h-3.5" />
+              </IconBtn>
 
-              <button
+              <TextBtn
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-sm border transition-colors ${
-                  isSearchOpen
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-hairline text-mute hover:text-ink bg-canvas'
-                }`}
-                title="Search AST (Ctrl+F / Cmd+F)"
+                aria-pressed={isSearchOpen}
+                className={isSearchOpen ? '!border-primary !bg-primary/15 !text-primary' : ''}
+                title={`Search the tree (${shortcut('F')})`}
               >
-                <Search className="w-3.5 h-3.5" />
-                <span>Find</span>
-              </button>
+                <Search className="w-3.5 h-3.5" /> Find
+              </TextBtn>
             </div>
           </div>
         </div>
       ) : (
         /* Inspector Mode Header: Only Expand / Collapse controls */
         <div className="min-h-9 py-1 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
-          <span className="text-[11px] font-semibold text-mute uppercase tracking-wider">
+          <span className="text-[11px] font-semibold text-mute uppercase tracking-[1.5px]">
             Tree View
           </span>
           <div className="flex items-center gap-1">
-            <button
-              onClick={handleExpandAll}
-              className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
-              title="Expand all nodes"
-            >
-              <ChevronsUpDown className="w-3 h-3 text-primary" />
-              <span>Expand all</span>
-            </button>
-            <button
-              onClick={handleCollapseAll}
-              className="px-2 py-1 rounded-sm border border-hairline hover:bg-canvas text-mute hover:text-ink text-xs transition-colors flex items-center gap-1"
-              title="Collapse all nodes"
-            >
-              <ChevronsDownUp className="w-3 h-3 text-mute" />
-              <span>Collapse all</span>
-            </button>
+            <TextBtn onClick={handleExpandAll} title="Expand all nodes">
+              <ChevronsUpDown className="w-3 h-3 text-primary" /> Expand all
+            </TextBtn>
+            <TextBtn onClick={handleCollapseAll} title="Collapse all nodes">
+              <ChevronsDownUp className="w-3 h-3" /> Collapse all
+            </TextBtn>
           </div>
         </div>
       )}
@@ -498,12 +449,28 @@ const TreeNode: React.FC<TreeNodeProps> = ({
 
   const domId = `tree-node-${path.join('-')}`;
 
+  /** Lets the keyboard do what a click on the row does. */
+  const rowKeys = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    const container = node.type === 'object' || node.type === 'array';
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.currentTarget.click();
+    } else if (container && ((e.key === 'ArrowRight' && !isExpanded) || (e.key === 'ArrowLeft' && isExpanded))) {
+      e.preventDefault();
+      onToggleExpand(pathKey);
+    }
+  };
+
   if (node.type === 'object') {
     const count = node.children.length;
     return (
       <div id={domId} className="my-0.5">
         <div
-          className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded cursor-pointer transition-colors group ${
+          tabIndex={0}
+          aria-expanded={isExpanded}
+          onKeyDown={rowKeys}
+          className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded-xs cursor-pointer transition-colors group ${
             isSearchCurrentMatch
               ? 'bg-primary/20 border-l-2 border-primary'
               : isNodeActive
@@ -521,7 +488,9 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               e.stopPropagation();
               onToggleExpand(pathKey);
             }}
-            className="p-0.5 text-mute hover:text-ink rounded"
+            tabIndex={-1}
+            aria-label={isExpanded ? 'Collapse' : 'Expand'}
+            className="p-0.5 text-mute hover:text-ink rounded-xs"
           >
             {isExpanded ? (
               <ChevronDown className="w-3.5 h-3.5 text-primary" />
@@ -583,7 +552,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({
     return (
       <div id={domId} className="my-0.5">
         <div
-          className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded cursor-pointer transition-colors group ${
+          tabIndex={0}
+          aria-expanded={isExpanded}
+          onKeyDown={rowKeys}
+          className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded-xs cursor-pointer transition-colors group ${
             isSearchCurrentMatch
               ? 'bg-primary/20 border-l-2 border-primary'
               : isNodeActive
@@ -601,7 +573,9 @@ const TreeNode: React.FC<TreeNodeProps> = ({
               e.stopPropagation();
               onToggleExpand(pathKey);
             }}
-            className="p-0.5 text-mute hover:text-ink rounded"
+            tabIndex={-1}
+            aria-label={isExpanded ? 'Collapse' : 'Expand'}
+            className="p-0.5 text-mute hover:text-ink rounded-xs"
           >
             {isExpanded ? (
               <ChevronDown className="w-3.5 h-3.5 text-primary" />
@@ -661,6 +635,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({
   return (
     <div
       id={domId}
+      tabIndex={0}
+      onKeyDown={rowKeys}
       onClick={(e) => {
         // Row click: pathfinder may copy path; do not steal key/value selection
         if (clickAction === 'path') {
@@ -669,7 +645,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({
           onNodeActivate?.(path, e);
         }
       }}
-      className={`flex items-center gap-2 py-0.5 px-1.5 rounded transition-colors group ${
+      className={`flex items-center gap-2 py-0.5 px-1.5 rounded-xs transition-colors group ${
         isSearchCurrentMatch
           ? 'bg-primary/20 border-l-2 border-primary'
           : isNodeActive
@@ -760,7 +736,7 @@ const TokenSpan: React.FC<{
 
   if (editing) {
     return (
-      <input
+      <input aria-label="Edit value"
         ref={inputRef}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}

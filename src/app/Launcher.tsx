@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TOOL_REGISTRY, groupTools } from '../registry.ts';
-import { Zap, Search, Command } from 'lucide-react';
+import { Zap, Search } from 'lucide-react';
+import { shortcut } from '../lib/platform.ts';
 
 interface LauncherProps {
   onNavigate: (route: string) => void;
@@ -127,7 +128,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
         <div className="relative mb-10 max-w-2xl">
           <div className="flex items-center gap-2.5 bg-canvas-soft border border-hairline rounded-sm px-4 py-3 focus-within:border-primary transition-colors">
             <Search className="w-4 h-4 text-mute shrink-0" />
-            <input
+            <input aria-label="Search tools"
               ref={searchRef}
               data-focus="quiet"
               type="text"
@@ -169,19 +170,20 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
                         key={tool.id}
                         href={tool.route}
                         data-card-idx={thisIdx}
+                        data-instant
                         onClick={(e) => {
                           e.preventDefault();
                           onNavigate(tool.route);
                         }}
                         onMouseEnter={() => setSelectedIndex(thisIdx)}
-                        className={`group flex items-start gap-3 p-4 rounded-md border transition-colors ${
+                        className={`group flex items-start gap-3 p-4 rounded-md border ${
                           isSelected
                             ? 'border-primary bg-primary/5 shadow-inset-glow'
                             : 'border-hairline bg-canvas hover:border-primary/40'
                         }`}
                       >
                         <div
-                          className={`w-8 h-8 rounded-sm border flex items-center justify-center shrink-0 transition-colors ${
+                          className={`w-8 h-8 rounded-sm border flex items-center justify-center shrink-0 ${
                             isSelected
                               ? 'bg-primary/10 border-primary/40 text-primary'
                               : 'bg-canvas-soft border-hairline text-mute group-hover:text-primary group-hover:border-primary/30'
@@ -220,7 +222,7 @@ export const Launcher: React.FC<LauncherProps> = ({ onNavigate }) => {
           </span>
           <span className="flex items-center gap-1">
             <kbd className="px-1 py-0.5 rounded-xs bg-canvas-soft border border-hairline text-[11px] text-ink flex items-center gap-0.5">
-              <Command className="w-2.5 h-2.5" />K
+              {shortcut('K')}
             </kbd>
             jump
           </span>

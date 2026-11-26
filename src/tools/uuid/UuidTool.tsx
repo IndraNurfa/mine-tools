@@ -61,7 +61,7 @@ export const UuidTool: React.FC = () => {
           type="button"
           onClick={() => copy(single, 'UUID copied')}
           title="Click to copy"
-          className="max-w-full px-5 py-4 rounded-md border border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors font-mono text-xl sm:text-3xl text-ink-strong tracking-tight break-all"
+          className="max-w-full px-5 py-4 rounded-md border border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors font-mono text-xl sm:text-2xl text-ink-strong tracking-tight break-all"
         >
           {single}
         </button>
@@ -79,7 +79,7 @@ export const UuidTool: React.FC = () => {
       <section className="flex-1 min-h-[240px] flex flex-col">
         <div className="px-4 py-3 flex flex-wrap items-center gap-3 border-b border-hairline">
           <Label>Bulk generate</Label>
-          <input
+          <input aria-label="How many"
             type="number"
             min={1}
             max={10000}
@@ -87,7 +87,7 @@ export const UuidTool: React.FC = () => {
             onChange={(e) => setCount(Math.max(1, Math.min(10_000, parseInt(e.target.value, 10) || 1)))}
             className={`${inputCls} w-24 tabular-nums`}
           />
-          <TextBtn primary onClick={generateBulk}>
+          <TextBtn onClick={generateBulk}>
             <Fingerprint className="w-3.5 h-3.5" /> Generate {count} UUIDs
           </TextBtn>
         </div>

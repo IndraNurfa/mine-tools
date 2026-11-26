@@ -40,7 +40,7 @@ export const LinesTool: React.FC = () => {
       <div className="flex-1 min-h-0 grid grid-rows-2 lg:grid-rows-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-hairline">
         <div className="flex flex-col min-h-0">
           <PaneHeader title={`Input · ${inCount} lines`} onPaste={paste} onClear={() => setInput('')} />
-          <textarea
+          <textarea aria-label="Input lines"
             autoFocus
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -51,7 +51,7 @@ export const LinesTool: React.FC = () => {
         </div>
         <div className="flex flex-col min-h-0">
           <PaneHeader title={`Output · ${input ? lines.length : 0} lines`} copyText={output} />
-          <textarea readOnly value={output} spellCheck={false} className={textareaCls} />
+          <textarea aria-label="Output lines" readOnly value={output} spellCheck={false} className={textareaCls} />
         </div>
       </div>
     </div>

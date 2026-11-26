@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './app/App.tsx';
+// Fonts are bundled with the app: no third-party requests.
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
 import './index.css';
 import './monaco-setup.ts';
 import { scrubStoredSecrets } from './lib/storage.ts';

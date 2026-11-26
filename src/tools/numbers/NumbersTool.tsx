@@ -35,7 +35,7 @@ export const NumbersTool: React.FC = () => {
     <div className="h-full flex flex-col min-h-0 bg-canvas">
       <Page className="grid xl:grid-cols-2 gap-6 content-start">
         <Panel title="Number bases · BigInt-exact" bodyClassName="p-4 space-y-4">
-          <input
+          <input aria-label="Number"
             autoFocus
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -59,8 +59,8 @@ export const NumbersTool: React.FC = () => {
         </Panel>
         <Panel title="Data sizes" bodyClassName="p-4 space-y-4">
           <div className="flex gap-2">
-            <input value={size} onChange={(e) => setSize(e.target.value)} className={`${inputCls} flex-1 text-lg py-3`} />
-            <select value={unit} onChange={(e) => setUnit(e.target.value)} className={`${inputCls} px-3 text-sm`}>
+            <input aria-label="Size" value={size} onChange={(e) => setSize(e.target.value)} className={`${inputCls} flex-1 text-lg py-3`} />
+            <select aria-label="Size unit" value={unit} onChange={(e) => setUnit(e.target.value)} className={`${inputCls} px-3 text-sm`}>
               {[...BYTE_UNITS_SI, ...BYTE_UNITS_IEC.slice(1)].map((u) => (
                 <option key={u}>{u}</option>
               ))}

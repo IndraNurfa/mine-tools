@@ -29,6 +29,7 @@ import {
   AlignJustify,
   FolderTree,
 } from 'lucide-react';
+import { Segmented } from '../../components/ui.tsx';
 
 const SAMPLE_LEFT = `{
   "name": "Toolbox API",
@@ -142,7 +143,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({
       {/* Pane header */}
       <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+          <span className="font-semibold text-ink uppercase tracking-[1.5px] text-[11px]">
             {label}
           </span>
           {error && (
@@ -196,7 +197,7 @@ const EditorPane: React.FC<EditorPaneProps> = ({
           options={{
             minimap: { enabled: false },
             fontSize: 13,
-            fontFamily: "'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+            fontFamily: "'SF Mono', 'JetBrains Mono Variable', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
             lineNumbers: 'on',
             scrollBeyondLastLine: false,
             automaticLayout: true,
@@ -389,44 +390,25 @@ export const DiffTool: React.FC = () => {
         {/* Left actions */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Diff mode switch */}
-          <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
-            <button
-              onClick={() => setDiffMode('inline')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-xs transition-colors ${
-                diffMode === 'inline'
-                  ? 'bg-primary text-canvas font-semibold'
-                  : 'text-mute hover:text-ink'
-              }`}
-            >
-              <AlignJustify className="w-3.5 h-3.5" />
-              <span>Inline Diff</span>
-            </button>
-            <button
-              onClick={() => setDiffMode('semantic')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-xs transition-colors ${
-                diffMode === 'semantic'
-                  ? 'bg-primary text-canvas font-semibold'
-                  : 'text-mute hover:text-ink'
-              }`}
-            >
-              <WrapText className="w-3.5 h-3.5" />
-              <span>Semantic</span>
-              <span className="text-[11px] font-mono px-1.5 py-0.5 rounded-full bg-canvas border border-hairline text-mute ml-1">
-                {diffSummary.total}
-              </span>
-            </button>
-            <button
-              onClick={() => setDiffMode('tree')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-xs transition-colors ${
-                diffMode === 'tree'
-                  ? 'bg-primary text-canvas font-semibold'
-                  : 'text-mute hover:text-ink'
-              }`}
-            >
-              <FolderTree className="w-3.5 h-3.5" />
-              <span>Tree</span>
-            </button>
-          </div>
+          <Segmented
+            value={diffMode}
+            onChange={setDiffMode}
+            options={[
+              { id: 'inline', label: <><AlignJustify className="w-3.5 h-3.5" /> Inline Diff</> },
+              {
+                id: 'semantic',
+                label: (
+                  <>
+                    <WrapText className="w-3.5 h-3.5" /> Semantic
+                    <span className="text-[11px] font-mono px-1.5 rounded-pill border border-hairline text-mute">
+                      {diffSummary.total}
+                    </span>
+                  </>
+                ),
+              },
+              { id: 'tree', label: <><FolderTree className="w-3.5 h-3.5" /> Tree</> },
+            ]}
+          />
 
           {/* Summary pills */}
           <div className="flex items-center gap-1.5 pl-2 border-l border-hairline">
@@ -476,7 +458,7 @@ export const DiffTool: React.FC = () => {
               <div className="w-px h-4 bg-hairline" />
               <div className="flex items-center gap-1.5">
                 <span className="text-mute">Path:</span>
-                <select
+                <select aria-label="Path format"
                   value={pathFormat}
                   onChange={(e) => {
                     setPathFormat(e.target.value as PathFormat);
@@ -501,7 +483,7 @@ export const DiffTool: React.FC = () => {
             {/* Left tree */}
             <div className="flex flex-col min-w-0 w-1/2 overflow-hidden">
               <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-x-2 text-xs shrink-0">
-                <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+                <span className="font-semibold text-ink uppercase tracking-[1.5px] text-[11px]">
                   Original (Left)
                 </span>
                 <span className="text-[11px] text-mute font-mono">
@@ -537,7 +519,7 @@ export const DiffTool: React.FC = () => {
             {/* Right tree */}
             <div className="flex flex-col min-w-0 w-1/2 overflow-hidden">
               <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-x-2 text-xs shrink-0">
-                <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+                <span className="font-semibold text-ink uppercase tracking-[1.5px] text-[11px]">
                   Modified (Right)
                 </span>
                 <span className="text-[11px] text-mute font-mono">
@@ -611,25 +593,19 @@ export const DiffTool: React.FC = () => {
               >
                 {/* Panel header */}
                 <div className="min-h-10 py-1.5 border-b border-hairline bg-canvas-soft px-3 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
-                  <span className="font-semibold text-ink uppercase tracking-wider text-[11px]">
+                  <span className="font-semibold text-ink uppercase tracking-[1.5px] text-[11px]">
                     Changes
                   </span>
                   {/* Filter pills */}
-                  <div className="flex items-center bg-canvas border border-hairline rounded-sm p-0.5">
-                    {(['all', 'added', 'removed', 'changed'] as const).map((f) => (
-                      <button
-                        key={f}
-                        onClick={() => setChangeTypeFilter(f)}
-                        className={`px-2 py-0.5 rounded-xs text-[11px] font-mono transition-colors capitalize ${
-                          changeTypeFilter === f
-                            ? 'bg-primary text-canvas font-semibold'
-                            : 'text-mute hover:text-ink'
-                        }`}
-                      >
-                        {f === 'all' ? `All (${diffSummary.total})` : f}
-                      </button>
-                    ))}
-                  </div>
+                  <Segmented
+                    mono
+                    value={changeTypeFilter}
+                    onChange={setChangeTypeFilter}
+                    options={(['all', 'added', 'removed', 'changed'] as const).map((id) => ({
+                      id,
+                      label: <span className="capitalize">{id === 'all' ? `All (${diffSummary.total})` : id}</span>,
+                    }))}
+                  />
                 </div>
 
                 {/* Diff rows */}
@@ -678,7 +654,7 @@ export const DiffTool: React.FC = () => {
                               title="Click to copy path"
                             >
                               <span className="truncate">{formatted || '<root>'}</span>
-                              <Copy className="w-2.5 h-2.5 opacity-0 group-hover/path:opacity-60 shrink-0 transition-opacity" />
+                              <Copy className="w-2.5 h-2.5 opacity-60 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/path:opacity-60 shrink-0 transition-opacity" />
                             </button>
 
                             {/* Values */}
